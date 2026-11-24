@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>منظومة إصدار الباجات التعريفية – مستشفى الإمام الحسن المجتبى (ع)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--p:#0b6e8a;--pd:#084f63;--bg:#f3f6f8;--card:#fff;--tx:#17262e;--mu:#62757f;--bd:#d5dfe4;--err:#c0392b;--ok:#1e8449}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Cairo',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6;font-size:16px}
+.wrap{max-width:520px;margin:0 auto;padding:16px}
+.card{background:var(--card);border-radius:18px;padding:20px;box-shadow:0 2px 14px rgba(11,60,80,.08);margin-bottom:14px}
+.center{text-align:center}
+.logo{width:96px;height:96px;margin:6px auto 10px;display:block;object-fit:contain;-webkit-tap-highlight-color:transparent;user-select:none}
+h1{font-size:20px;margin:6px 0}
+h2{font-size:18px;margin:0 0 12px}
+.muted{color:var(--mu);font-size:14px}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font:inherit;font-weight:700;font-size:17px;cursor:pointer;background:var(--p);color:#fff;margin-top:12px}
+.btn:active{background:var(--pd)}
+.btn.sec{background:#e4eef2;color:var(--pd)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.row{display:flex;gap:10px}.row>*{flex:1}
+label{display:block;font-weight:600;margin:14px 0 6px;font-size:15px}
+label .req{color:var(--err)}
+input,select{width:100%;padding:13px;border:1.5px solid var(--bd);border-radius:12px;font:inherit;font-size:16px;background:#fff;color:var(--tx)}
+input:focus,select:focus{outline:none;border-color:var(--p)}
+input.bad,select.bad{border-color:var(--err)}
+.ltr{direction:ltr;text-align:left}
+.msg{padding:12px 14px;border-radius:12px;margin-top:12px;font-size:15px}
+.msg.err{background:#fdecea;color:var(--err)}
+.msg.ok{background:#e8f6ee;color:var(--ok)}
+.bar{height:10px;background:#dde7ec;border-radius:8px;overflow:hidden;margin:6px 0 4px}
+.bar>i{display:block;height:100%;background:var(--p);width:0;transition:width .3s}
+.steps{display:flex;justify-content:space-between;font-size:13px;color:var(--mu)}
+.steps b{color:var(--p)}
+.thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.thumb{position:relative;width:96px;height:120px;border-radius:12px;overflow:hidden;border:1.5px solid var(--bd);background:#eee}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb button{position:absolute;top:4px;left:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:16px;line-height:1}
+.photo-prev{width:150px;height:190px;margin:10px auto 0;border-radius:14px;overflow:hidden;border:1.5px solid var(--bd);background:#fff}
+.photo-prev img{width:100%;height:100%;object-fit:cover}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #edf1f3;font-size:15px}
+.kv span:first-child{color:var(--mu);white-space:nowrap}
+.kv span:last-child{font-weight:600;text-align:left;overflow-wrap:anywhere}
+.reqno{font-size:30px;font-weight:700;letter-spacing:2px;color:var(--pd);direction:ltr;margin:8px 0}
+.hidden{display:none!important}
+.link{background:none;border:0;color:var(--p);font:inherit;font-weight:600;cursor:pointer;padding:12px;width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- الصفحة الرئيسية -->
+<section id="v-home" class="card center">
+  <img id="logo" class="logo" src="logo.png" alt="شعار المستشفى">
+  <h1>مستشفى الإمام الحسن المجتبى (عليه السلام)</h1>
+  <div class="muted">وزارة الصحة العراقية</div>
+  <h2 style="margin-top:18px">منظومة إصدار الباجات التعريفية</h2>
+  <p>أهلاً بك في منظومة الباجات الإلكترونية</p>
+  <button class="btn" id="btn-start">ابدأ تسجيل بياناتك</button>
+  <button class="btn sec" id="btn-status">استعلام عن حالة طلب</button>
+</section>
+
+<!-- الاستمارة -->
+<section id="v-form" class="hidden">
+  <div class="card">
+    <div class="steps"><b id="step-label">الخطوة 1 من 4</b><span id="step-pct">0%</span></div>
+    <div class="bar"><i id="bar"></i></div>
+  </div>
+
+  <div class="card" id="s1">
+    <h2>المعلومات الشخصية</h2>
+    <label>الاسم الكامل بالعربية <span class="req">*</span></label>
+    <input id="name_ar" autocomplete="off">
+    <label>الاسم الكامل بالإنجليزية <span class="req">*</span></label>
+    <input id="name_en" class="ltr" autocomplete="off">
+    <label>التخصص / العنوان الوظيفي بالعربية <span class="req">*</span></label>
+    <input id="job_title_ar" autocomplete="off">
+    <label>التخصص / العنوان الوظيفي بالإنجليزية <span class="req">*</span></label>
+    <input id="job_title_en" class="ltr" autocomplete="off">
+    <label>مكان العمل (القسم) <span class="req">*</span></label>
+    <select id="dept"><option value="">جاري التحميل...</option></select>
+    <div id="sub-wrap" class="hidden">
+      <label>الشعبة / الكادر <span class="req">*</span></label>
+      <select id="sub"></select>
+    </div>
+    <label>الرقم الوظيفي (إن وجد)</label>
+    <input id="job_number" class="ltr" inputmode="numeric" autocomplete="off">
+    <label>رقم الهاتف <span class="req">*</span></label>
+    <input id="phone" class="ltr" inputmode="tel" placeholder="07XXXXXXXXX" autocomplete="tel">
+    <label>البريد الإلكتروني (اختياري)</label>
+    <input id="email" class="ltr" type="email" autocomplete="email">
+    <div id="e1" class="msg err hidden"></div>
+    <button class="btn" id="n1">التالي</button>
+  </div>
+
+  <div class="card hidden" id="s2">
+    <h2>الصورة الشخصية</h2>
+    <p class="muted">صورة واضحة للوجه، بخلفية فاتحة وبدون فلاتر.</p>
+    <div class="row">
+      <button class="btn" id="photo-cam" style="margin-top:0">التقاط صورة</button>
+      <button class="btn sec" id="photo-gal" style="margin-top:0">من الجهاز</button>
+    </div>
+    <input type="file" id="photo-in-cam" accept="image/*" capture="user" class="hidden">
+    <input type="file" id="photo-in-gal" accept="image/*" class="hidden">
+    <div id="photo-prev" class="photo-prev hidden"><img id="photo-img" alt=""></div>
+    <div id="e2" class="msg err hidden"></div>
+    <div class="row"><button class="btn sec" id="b2">السابق</button><button class="btn" id="n2">التالي</button></div>
+  </div>
+
+  <div class="card hidden" id="s3">
+    <h2>استمارة تأييد المعلومات الوظيفية</h2>
+    <p class="muted">صوّر الاستمارة الورقية بعد ملئها وتوقيعها من مسؤول القسم. يمكنك إضافة أكثر من صفحة (حتى 5).</p>
+    <div class="row">
+      <button class="btn" id="form-cam" style="margin-top:0">تصوير صفحة</button>
+      <button class="btn sec" id="form-gal" style="margin-top:0">من الجهاز</button>
+    </div>
+    <input type="file" id="form-in-cam" accept="image/*" capture="environment" class="hidden">
+    <input type="file" id="form-in-gal" accept="image/*" multiple class="hidden">
+    <div id="form-thumbs" class="thumbs"></div>
+    <div id="e3" class="msg err hidden"></div>
+    <div class="row"><button class="btn sec" id="b3">السابق</button><button class="btn" id="n3">التالي</button></div>
+  </div>
+
+  <div class="card hidden" id="s4">
+    <h2>مراجعة البيانات</h2>
+    <div id="review"></div>
+    <div id="e4" class="msg err hidden"></div>
+    <button class="btn" id="submit">تأكيد وإرسال الطلب</button>
+    <button class="btn sec" id="b4">السابق</button>
+  </div>
+
+  <button class="link" id="form-home">العودة للصفحة الرئيسية</button>
+</section>
+
+<!-- النجاح -->
+<section id="v-done" class="card center hidden">
+  <h2 style="color:var(--ok)">تم تسجيل بياناتك بنجاح</h2>
+  <p>تم تسجيل بياناتك بنجاح في منظومة الباجات الإلكترونية لمستشفى الإمام الحسن المجتبى (عليه السلام).</p>
+  <div class="muted">رقم طلبك</div>
+  <div class="reqno" id="done-no"></div>
+  <button class="btn sec" id="copy-no">نسخ رقم الطلب</button>
+  <p class="muted" style="margin-top:14px">يرجى الاحتفاظ برقم الطلب لمتابعة حالة إصدار الباج.<br>سيتم تدقيق بياناتك ومراجعتها قبل الموافقة النهائية والطباعة.</p>
+  <button class="link" id="done-home">العودة للصفحة الرئيسية</button>
+</section>
+
+<!-- الاستعلام -->
+<section id="v-status" class="card hidden">
+  <h2>الاستعلام عن حالة الطلب</h2>
+  <label>رقم الطلب</label>
+  <input id="st-no" class="ltr" placeholder="R-000001" autocomplete="off">
+  <label>الرقم الوظيفي (أو رقم الهاتف إن لم يكن لديك رقم وظيفي)</label>
+  <input id="st-id" class="ltr" inputmode="numeric" autocomplete="off">
+  <div id="st-out" class="msg hidden"></div>
+  <button class="btn" id="st-go">استعلام</button>
+  <button class="link" id="st-home">العودة للصفحة الرئيسية</button>
+</section>
+
+</div>
+
+<script>
+"use strict";
+const API = "https://ppcglbgcaqgjmapyyxae.supabase.co/functions/v1/smooth-action";
+const $ = (id) => document.getElementById(id);
+const TEXT_FIELDS = ["name_ar","name_en","job_title_ar","job_title_en","job_number","phone","email"];
+const STATUS_AR = {
+  NEW:"طلب جديد", UNDER_REVIEW:"بانتظار التدقيق", RETURNED:"معاد إليك للتعديل", VERIFIED:"اجتاز التدقيق",
+  PENDING_APPROVAL:"بانتظار موافقة المدير", APPROVED:"تمت الموافقة النهائية", REJECTED:"مرفوض",
+  READY_TO_PRINT:"جاهز للطباعة", PRINTED:"تمت الطباعة", DELIVERED:"تم تسليم الباج",
+  EXPIRED:"منتهي الصلاحية", REVOKED:"ملغى"
+};
+const st = { step:1, depts:[], photo:null, forms:[], key:null, sending:false };
+
+const toEn = (s) => String(s||"").replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+const val = (id) => toEn($(id).value.trim());
+const show = (el, on) => $(el).classList.toggle("hidden", !on);
+function err(id, msg){ const e=$(id); if(msg){ e.textContent=msg; e.classList.remove("hidden"); } else e.classList.add("hidden"); }
+
+/* ---------- التنقل بين الصفحات ---------- */
+function view(name){
+  ["v-home","v-form","v-done","v-status"].forEach(v => show(v, v === "v-"+name));
+  window.scrollTo(0,0);
+}
+function goStep(n){
+  st.step = n;
+  [1,2,3,4].forEach(i => show("s"+i, i===n));
+  $("step-label").textContent = "الخطوة "+n+" من 4";
+  const pct = (n-1)*25; $("step-pct").textContent = pct+"%"; $("bar").style.width = pct+"%";
+  if(n===4) renderReview();
+  window.scrollTo(0,0);
+}
+
+/* ---------- الأقسام ---------- */
+async function loadDepts(){
+  try{
+    const r = await fetch(API+"?action=departments");
+    const j = await r.json();
+    if(!r.ok) throw new Error();
+    st.depts = j.departments || [];
+    const sel = $("dept"); sel.innerHTML = "";
+    sel.append(new Option("اختر القسم", ""));
+    st.depts.filter(d => d.parent_id === null).sort((a,b)=>a.id-b.id)
+      .forEach(d => sel.append(new Option(d.name_ar, d.id)));
+    restoreDept();
+  }catch(e){
+    $("dept").innerHTML = "<option value=''>تعذر تحميل الأقسام – تحقق من الإنترنت</option>";
+  }
+}
+function children(pid){ return st.depts.filter(d => d.parent_id === Number(pid)).sort((a,b)=>a.id-b.id); }
+function onDept(){
+  const kids = $("dept").value ? children($("dept").value) : [];
+  const sub = $("sub"); sub.innerHTML = "";
+  if(kids.length){ sub.append(new Option("اختر", "")); kids.forEach(k => sub.append(new Option(k.name_ar, k.id))); }
+  show("sub-wrap", kids.length > 0);
+  saveDraft();
+}
+function deptId(){
+  const d = $("dept").value; if(!d) return "";
+  return children(d).length ? $("sub").value : d;
+}
+function deptLabel(){
+  const d = st.depts.find(x => String(x.id) === $("dept").value); if(!d) return "";
+  const s = children(d.id).length ? st.depts.find(x => String(x.id) === $("sub").value) : null;
+  return s ? d.name_ar+" ← "+s.name_ar : d.name_ar;
+}
+
+/* ---------- مسودة محلية للنصوص ---------- */
+function saveDraft(){
+  try{
+    const o = {}; TEXT_FIELDS.forEach(f => o[f] = $(f).value);
+    o.dept = $("dept").value; o.sub = $("sub").value;
+    localStorage.setItem("badge_draft", JSON.stringify(o));
+  }catch(e){}
+}
+let draft = null;
+function loadDraft(){
+  try{ draft = JSON.parse(localStorage.getItem("badge_draft")||"null"); }catch(e){ draft = null; }
+  if(draft) TEXT_FIELDS.forEach(f => { if(draft[f]) $(f).value = draft[f]; });
+}
+function restoreDept(){
+  if(!draft || !draft.dept) return;
+  $("dept").value = draft.dept; onDept();
+  if(draft.sub) $("sub").value = draft.sub;
+}
+
+/* ---------- الخطوة 1: التحقق ---------- */
+function validate1(){
+  const bad = []; const mark = (id, cond) => { $(id).classList.toggle("bad", !cond); if(!cond) bad.push(id); };
+  mark("name_ar", val("name_ar").length >= 6 && /[\u0600-\u06FF]/.test(val("name_ar")));
+  mark("name_en", val("name_en").length >= 6 && /^[A-Za-z .'-]+$/.test(val("name_en")));
+  mark("job_title_ar", val("job_title_ar").length >= 2);
+  mark("job_title_en", val("job_title_en").length >= 2);
+  mark("dept", !!$("dept").value);
+  if(!$("sub-wrap").classList.contains("hidden")) mark("sub", !!$("sub").value);
+  mark("phone", /^07\d{9}$/.test(val("phone").replace(/[\s-]/g,"")));
+  mark("email", !val("email") || /^\S+@\S+\.\S+$/.test(val("email")));
+  if(bad.length){
+    err("e1","يرجى تصحيح الحقول المعلّمة بالأحمر. الاسم بالعربية يكتب بحروف عربية، وبالإنجليزية بحروف إنجليزية، والهاتف بصيغة 07XXXXXXXXX.");
+    $(bad[0]).scrollIntoView({block:"center"}); return false;
+  }
+  err("e1"); return true;
+}
+
+/* ---------- الصور ---------- */
+function compress(file, max, q){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const r = Math.min(1, max/Math.max(img.width, img.height));
+      const w = Math.round(img.width*r), h = Math.round(img.height*r);
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0,0,w,h); x.drawImage(img,0,0,w,h);
+      c.toBlob(b => { URL.revokeObjectURL(url); b ? res(b) : rej(new Error("fail")); }, "image/jpeg", q);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("bad")); };
+    img.src = url;
+  });
+}
+async function setPhoto(file){
+  if(!file) return;
+  try{
+    const b = await compress(file, 1200, 0.88);
+    if(st.photo) URL.revokeObjectURL(st.photo.url);
+    st.photo = { blob:b, url:URL.createObjectURL(b) };
+    $("photo-img").src = st.photo.url; show("photo-prev", true); err("e2");
+  }catch(e){ err("e2","تعذر قراءة الصورة. جرّب صورة أخرى بصيغة JPG أو PNG."); }
+}
+async function addForms(files){
+  for(const f of Array.from(files||[])){
+    if(st.forms.length >= 5){ err("e3","الحد الأقصى 5 صفحات."); break; }
+    try{
+      const b = await compress(f, 1800, 0.85);
+      st.forms.push({ blob:b, url:URL.createObjectURL(b) }); err("e3");
+    }catch(e){ err("e3","تعذر قراءة إحدى الصور. أعد التصوير."); }
+  }
+  renderForms();
+}
+function renderForms(){
+  const box = $("form-thumbs"); box.innerHTML = "";
+  st.forms.forEach((f,i) => {
+    const d = document.createElement("div"); d.className = "thumb";
+    const im = document.createElement("img"); im.src = f.url; im.alt = "صفحة "+(i+1);
+    const x = document.createElement("button"); x.textContent = "×"; x.setAttribute("aria-label","حذف");
+    x.onclick = () => { URL.revokeObjectURL(f.url); st.forms.splice(i,1); renderForms(); };
+    d.append(im, x); box.append(d);
+  });
+}
+
+/* ---------- المراجعة والإرسال ---------- */
+function renderReview(){
+  const box = $("review"); box.innerHTML = "";
+  const rows = [["الاسم بالعربية",val("name_ar")],["الاسم بالإنجليزية",val("name_en")],
+    ["العنوان الوظيفي (ع)",val("job_title_ar")],["العنوان الوظيفي (E)",val("job_title_en")],
+    ["مكان العمل",deptLabel()],["الرقم الوظيفي",val("job_number")||"—"],
+    ["الهاتف",val("phone")],["البريد",val("email")||"—"]];
+  rows.forEach(([k,v]) => {
+    const d = document.createElement("div"); d.className = "kv";
+    const a = document.createElement("span"); a.textContent = k;
+    const b = document.createElement("span"); b.textContent = v;
+    d.append(a,b); box.append(d);
+  });
+  const t = document.createElement("div"); t.className = "thumbs";
+  [st.photo].concat(st.forms).forEach(f => {
+    if(!f) return; const d = document.createElement("div"); d.className = "thumb";
+    const im = document.createElement("img"); im.src = f.url; d.append(im); t.append(d);
+  });
+  box.append(t);
+}
+async function submit(){
+  if(st.sending) return;
+  st.sending = true; $("submit").disabled = true; $("submit").textContent = "جاري الإرسال..."; err("e4");
+  if(!st.key) st.key = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())+Math.random().toString(16).slice(2)+"xxxxxxxx");
+  const fd = new FormData();
+  fd.append("idempotency_key", st.key);
+  fd.append("name_ar", val("name_ar")); fd.append("name_en", val("name_en"));
+  fd.append("job_title_ar", val("job_title_ar")); fd.append("job_title_en", val("job_title_en"));
+  fd.append("department_id", deptId());
+  fd.append("job_number", val("job_number")); fd.append("phone", val("phone").replace(/[\s-]/g,""));
+  fd.append("email", val("email"));
+  fd.append("photo", st.photo.blob, "photo.jpg");
+  st.forms.forEach((f,i) => fd.append("form", f.blob, "form"+(i+1)+".jpg"));
+  const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 90000);
+  try{
+    const r = await fetch(API, { method:"POST", body:fd, signal:ctl.signal });
+    const j = await r.json().catch(() => ({}));
+    if(!r.ok || !j.request_no) throw new Error(j.error || "حدث خطأ. أعد المحاولة.");
+    st.key = null;
+    try{ localStorage.removeItem("badge_draft"); localStorage.setItem("last_request_no", j.request_no); }catch(e){}
+    $("done-no").textContent = j.request_no; view("done");
+  }catch(e){
+    const offline = e.name === "AbortError" || e instanceof TypeError;
+    err("e4", offline ? "تعذر الاتصال. تحقق من الإنترنت ثم اضغط إرسال مرة ثانية (لن يتكرر طلبك)." : e.message);
+  }finally{
+    clearTimeout(to); st.sending = false; $("submit").disabled = false; $("submit").textContent = "تأكيد وإرسال الطلب";
+  }
+}
+
+/* ---------- الاستعلام ---------- */
+async function checkStatus(){
+  const out = $("st-out"); out.className = "msg"; out.classList.remove("hidden");
+  const no = val("st-no").toUpperCase(), id = val("st-id").replace(/[\s-]/g,"");
+  if(!no || !id){ out.classList.add("err"); out.textContent = "أدخل رقم الطلب والرقم الوظيفي."; return; }
+  out.classList.add("ok"); out.textContent = "جاري الاستعلام...";
+  try{
+    const r = await fetch(API+"?action=status&request_no="+encodeURIComponent(no)+"&id="+encodeURIComponent(id));
+    const j = await r.json();
+    out.className = "msg";
+    if(!r.ok){ out.classList.add("err"); out.textContent = j.error || "تعذر الاستعلام."; return; }
+    const q = j.request; out.classList.add("ok");
+    let t = "حالة طلبك: "+(STATUS_AR[q.status] || q.status);
+    if(q.return_reason) t += "\nالسبب: "+q.return_reason;
+    out.style.whiteSpace = "pre-line"; out.textContent = t;
+  }catch(e){ out.className = "msg err"; out.textContent = "تعذر الاتصال. تحقق من الإنترنت."; }
+}
+
+/* ---------- ربط الأزرار ---------- */
+$("logo").onerror = function(){
+  this.onerror = null;
+  this.src = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><circle cx="48" cy="48" r="46" fill="#e4eef2" stroke="#0b6e8a" stroke-width="3"/><path d="M40 20h16v20h20v16H56v20H40V56H20V40h20z" fill="#0b6e8a"/></svg>');
+};
+if($("logo").complete && $("logo").naturalWidth === 0) $("logo").onerror();
+$("btn-start").onclick = () => { view("form"); goStep(1); };
+$("btn-status").onclick = () => {
+  try{ const l = localStorage.getItem("last_request_no"); if(l && !$("st-no").value) $("st-no").value = l; }catch(e){}
+  view("status");
+};
+["form-home","done-home","st-home"].forEach(i => $(i).onclick = () => view("home"));
+$("dept").onchange = onDept;
+$("sub").onchange = saveDraft;
+TEXT_FIELDS.forEach(f => $(f).addEventListener("input", saveDraft));
+$("n1").onclick = () => { if(validate1()) goStep(2); };
+$("b2").onclick = () => goStep(1);
+$("n2").onclick = () => { if(!st.photo){ err("e2","الصورة الشخصية مطلوبة."); return; } err("e2"); goStep(3); };
+$("b3").onclick = () => goStep(2);
+$("n3").onclick = () => { if(!st.forms.length){ err("e3","يجب إرفاق صورة الاستمارة الورقية."); return; } err("e3"); goStep(4); };
+$("b4").onclick = () => goStep(3);
+$("submit").onclick = submit;
+$("photo-cam").onclick = () => $("photo-in-cam").click();
+$("photo-gal").onclick = () => $("photo-in-gal").click();
+["photo-in-cam","photo-in-gal"].forEach(i => $(i).onchange = (e) => { setPhoto(e.target.files[0]); e.target.value = ""; });
+$("form-cam").onclick = () => $("form-in-cam").click();
+$("form-gal").onclick = () => $("form-in-gal").click();
+["form-in-cam","form-in-gal"].forEach(i => $(i).onchange = (e) => { addForms(e.target.files); e.target.value = ""; });
+$("st-go").onclick = checkStatus;
+$("copy-no").onclick = async () => {
+  const t = $("done-no").textContent;
+  try{ await navigator.clipboard.writeText(t); $("copy-no").textContent = "تم النسخ ✓"; }
+  catch(e){ window.prompt("انسخ رقم الطلب:", t); }
+};
+
+/* دخول الإدارة المخفي: 5 ضغطات متتالية على الشعار (ليس حماية أمنية، الحماية بتسجيل الدخول) */
+let taps = 0, tapTimer = null;
+$("logo").addEventListener("click", () => {
+  taps++; clearTimeout(tapTimer); tapTimer = setTimeout(() => { taps = 0; }, 2500);
+  if(taps >= 5){ taps = 0; location.href = "admin.html"; }
+});
+
+loadDraft();
+loadDepts();
+</script>
+</body>
+</html>

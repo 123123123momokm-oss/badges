@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>لوحة الإدارة – منظومة الباجات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--p:#0b6e8a;--pd:#084f63;--bg:#f3f6f8;--card:#fff;--tx:#17262e;--mu:#62757f;--bd:#d5dfe4;--err:#c0392b;--ok:#1e8449;--warn:#b9770e}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Cairo',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--tx);line-height:1.6;font-size:16px}
+.wrap{max-width:1000px;margin:0 auto;padding:12px}
+.card{background:var(--card);border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(11,60,80,.08);margin-bottom:12px}
+h2{font-size:18px;margin:0 0 10px}h3{font-size:16px;margin:14px 0 6px}
+.muted{color:var(--mu);font-size:14px}
+.btn{border:0;border-radius:12px;padding:12px 16px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;background:var(--p);color:#fff}
+.btn:active{background:var(--pd)}.btn:disabled{opacity:.55}
+.btn.sec{background:#e4eef2;color:var(--pd)}.btn.red{background:var(--err)}.btn.green{background:var(--ok)}
+.btn.block{display:block;width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:140px}
+label{display:block;font-weight:600;margin:10px 0 4px;font-size:14px}
+input,select,textarea{width:100%;padding:11px;border:1.5px solid var(--bd);border-radius:10px;font:inherit;font-size:16px;background:#fff;color:var(--tx)}
+textarea{min-height:80px}
+.ltr{direction:ltr;text-align:left}
+.hdr{background:var(--pd);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+.hdr small{opacity:.8;display:block;font-size:12px}
+.hdr button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:8px 12px;font:inherit;cursor:pointer}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 12px 0;max-width:1000px;margin:0 auto}
+.tab{white-space:nowrap;border:0;background:#e4eef2;color:var(--pd);padding:10px 16px;border-radius:12px 12px 0 0;font:inherit;font-weight:600;cursor:pointer}
+.tab.on{background:#fff;color:var(--p)}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:700px){.cards{grid-template-columns:repeat(4,1fr)}}
+.stat{background:#fff;border-radius:14px;padding:14px;box-shadow:0 2px 10px rgba(11,60,80,.08)}
+.stat b{display:block;font-size:26px;color:var(--p);line-height:1.2}
+.stat span{font-size:13px;color:var(--mu)}
+.barrow{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:14px}
+.barrow .n{width:110px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.barrow .t{flex:1;background:#e8eff2;border-radius:6px;height:16px;overflow:hidden}
+.barrow .t i{display:block;height:100%;background:var(--p)}
+.barrow .c{width:36px;text-align:left;font-weight:700}
+.item{background:#fff;border-radius:14px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 8px rgba(11,60,80,.07);cursor:pointer}
+.item .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.item .nm{font-weight:700}
+.item .sub{font-size:13px;color:var(--mu)}
+.chip{display:inline-block;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;background:#e4eef2;color:var(--pd);white-space:nowrap}
+.chip.UNDER_REVIEW,.chip.NEW,.chip.PENDING_APPROVAL{background:#fdf2dc;color:var(--warn)}
+.chip.RETURNED{background:#fde9d9;color:#b4540a}
+.chip.REJECTED,.chip.REVOKED,.chip.off{background:#fdecea;color:var(--err)}
+.chip.VERIFIED,.chip.APPROVED,.chip.READY_TO_PRINT,.chip.PRINTED,.chip.DELIVERED,.chip.on{background:#e8f6ee;color:var(--ok)}
+.kv{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #edf1f3;font-size:15px}
+.kv span:first-child{color:var(--mu);white-space:nowrap}
+.kv span:last-child{font-weight:600;text-align:left;overflow-wrap:anywhere}
+.thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.thumb{width:110px;height:140px;border-radius:12px;overflow:hidden;border:1.5px solid var(--bd);cursor:zoom-in;background:#eee}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:50;display:flex;flex-direction:column}
+.viewer .bar{display:flex;gap:8px;padding:10px;justify-content:center}
+.viewer .bar button{background:#333;color:#fff;border:0;border-radius:10px;padding:10px 18px;font-size:18px;cursor:pointer}
+.viewer .box{flex:1;overflow:auto;text-align:center}
+.viewer img{display:block;margin:0 auto;max-width:none}
+.hidden{display:none!important}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#17262e;color:#fff;padding:12px 18px;border-radius:12px;z-index:60;max-width:90%;font-size:15px}
+.toast.bad{background:var(--err)}
+.login{max-width:420px;margin:30px auto}
+.tl{border-right:3px solid var(--bd);padding-right:12px;margin-top:6px}
+.tl div{margin:6px 0;font-size:14px}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0}
+.ck{display:grid;grid-template-columns:1fr 150px;gap:8px;align-items:center;margin:6px 0}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="viewer" class="viewer hidden">
+  <div class="bar"><button id="v-in">＋</button><button id="v-out">－</button><button id="v-close">إغلاق ✕</button></div>
+  <div class="box"><img id="v-img" alt=""></div>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+"use strict";
+const API = "https://ppcglbgcaqgjmapyyxae.supabase.co/functions/v1/quick-responder";
+const ROLE_AR = { SUPER_ADMIN:"مدير النظام", ASSISTANT_ADMIN:"مساعد مدير النظام", VERIFIER:"مدقق", APPROVER:"مدير الموافقة النهائية", PRINTER:"موظف الطباعة" };
+const STATUS_AR = { NEW:"جديد", UNDER_REVIEW:"بانتظار التدقيق", RETURNED:"معاد للتعديل", VERIFIED:"اجتاز التدقيق", PENDING_APPROVAL:"بانتظار موافقة المدير", APPROVED:"موافق عليه", REJECTED:"مرفوض", READY_TO_PRINT:"جاهز للطباعة", PRINTED:"مطبوع", DELIVERED:"مُسلَّم", EXPIRED:"منتهي", REVOKED:"ملغى" };
+const CHECKS = [
+  ["name_ar","تطابق الاسم العربي"],["name_en","تطابق الاسم الإنجليزي"],["job_title","تطابق العنوان الوظيفي"],
+  ["department","تطابق القسم"],["job_number","صحة الرقم الوظيفي"],["photo_clear","وضوح الصورة الشخصية"],
+  ["signature_present","وجود توقيع مسؤول القسم"],["form_clear","وضوح الاستمارة"],["no_differences","عدم وجود اختلافات في البيانات"]
+];
+const CHECK_AR = { MATCH:"مطابق", MISMATCH:"غير مطابق", NEEDS_REVIEW:"يحتاج مراجعة" };
+const ACTION_AR = { STATUS_CHANGE:"تغيير الحالة", INSERT:"إنشاء الطلب", UPDATE:"تحديث", VIEW_REQUEST:"اطلاع" };
+
+let SESS = sessionStorage.getItem("sess") || "";
+let ME = null, DEPTS = [], TAB = "dash";
+const app = document.getElementById("app");
+
+/* ---------- أدوات ---------- */
+function h(tag, props, ...kids){
+  const e = document.createElement(tag);
+  if(props) for(const k in props){
+    const v = props[k];
+    if(k === "class") e.className = v;
+    else if(k.slice(0,2) === "on") e[k] = v;
+    else if(k === "text") e.textContent = v;
+    else if(v !== false && v != null) e.setAttribute(k, v);
+  }
+  kids.flat(Infinity).forEach(c => { if(c == null || c === false) return; e.append(c.nodeType ? c : document.createTextNode(String(c))); });
+  return e;
+}
+function toast(msg, bad){
+  const t = document.getElementById("toast"); t.textContent = msg; t.className = "toast" + (bad ? " bad" : "");
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add("hidden"), 3500);
+}
+const fmt = (s) => s ? new Date(s).toLocaleString("ar", { dateStyle:"medium", timeStyle:"short" }) : "—";
+const day = (s) => s ? String(s).slice(0,10) : "—";
+const chip = (s) => h("span", { class:"chip "+s, text:STATUS_AR[s] || s });
+async function api(action, params){
+  let r;
+  try{ r = await fetch(API, { method:"POST", headers:{ "Content-Type":"application/json", "x-session":SESS }, body:JSON.stringify(Object.assign({ action }, params || {})) }); }
+  catch(e){ throw new Error("تعذر الاتصال بالخادم. تحقق من الإنترنت."); }
+  const j = await r.json().catch(() => ({}));
+  if(r.status === 401 && action !== "login"){ localOut(); throw new Error(j.error || "انتهت الجلسة"); }
+  if(!r.ok) throw new Error(j.error || "حدث خطأ");
+  return j;
+}
+function localOut(){ SESS = ""; ME = null; sessionStorage.removeItem("sess"); renderLogin(); }
+
+/* ---------- عارض الصور ---------- */
+let zoom = 1;
+const vimg = document.getElementById("v-img");
+function openViewer(url){ zoom = 1; vimg.style.width = "100%"; vimg.src = url; document.getElementById("viewer").classList.remove("hidden"); }
+document.getElementById("v-in").onclick = () => { zoom = Math.min(zoom + .5, 5); vimg.style.width = (zoom*100)+"%"; };
+document.getElementById("v-out").onclick = () => { zoom = Math.max(zoom - .5, 1); vimg.style.width = (zoom*100)+"%"; };
+document.getElementById("v-close").onclick = () => { document.getElementById("viewer").classList.add("hidden"); vimg.src = ""; };
+
+/* ---------- الدخول والإعداد ---------- */
+async function renderLogin(){
+  app.replaceChildren(h("div", { class:"wrap" }, h("p", { class:"muted", text:"جاري التحميل..." })));
+  let needs = false;
+  try{ needs = (await api("init")).needs_setup; }catch(e){}
+  const err = h("div", { class:"muted", style:"color:var(--err);margin-top:8px" });
+  const u = h("input", { class:"ltr", autocomplete:"username", autocapitalize:"none" });
+  const p = h("input", { class:"ltr", type:"password", autocomplete: needs ? "new-password" : "current-password" });
+  const fields = [h("label", { text:"اسم المستخدم" }), u, h("label", { text:"كلمة المرور" }), p];
+  let code, fn;
+  if(needs){
+    fn = h("input", { autocomplete:"name" });
+    code = h("input", { class:"ltr", autocomplete:"off" });
+    fields.unshift(h("label", { text:"رمز الإعداد" }), code, h("label", { text:"الاسم الكامل" }), fn);
+  }
+  const btn = h("button", { class:"btn block", style:"margin-top:14px", text: needs ? "إنشاء حساب مدير النظام" : "تسجيل الدخول" });
+  btn.onclick = async () => {
+    err.textContent = ""; btn.disabled = true;
+    try{
+      if(needs){
+        await api("setup", { code:code.value.trim(), username:u.value, full_name:fn.value, password:p.value });
+        toast("تم إنشاء الحساب. سجّل الدخول الآن."); renderLogin(); return;
+      }
+      const j = await api("login", { username:u.value, password:p.value });
+      SESS = j.token; sessionStorage.setItem("sess", SESS); ME = j.user; renderShell();
+    }catch(e){ err.textContent = e.message; btn.disabled = false; }
+  };
+  p.addEventListener("keydown", (e) => { if(e.key === "Enter") btn.click(); });
+  app.replaceChildren(h("div", { class:"wrap" }, h("div", { class:"card login" },
+    h("h2", { text: needs ? "إعداد النظام لأول مرة" : "دخول الإدارة" }),
+    h("div", { class:"muted", text:"مستشفى الإمام الحسن المجتبى (ع) – منظومة الباجات" }), fields, err, btn)));
+}
+
+/* ---------- الإطار العام ---------- */
+function tabsFor(){
+  const r = ME.role, t = [];
+  if(["SUPER_ADMIN","ASSISTANT_ADMIN","APPROVER","VERIFIER"].includes(r)){
+    t.push(["dash","لوحة المعلومات"], ["reqs", r === "VERIFIER" ? "التدقيق" : "الطلبات"]);
+  }
+  if(["SUPER_ADMIN","ASSISTANT_ADMIN"].includes(r)) t.push(["users","الحسابات"]);
+  if(r === "PRINTER") t.push(["print","الطباعة"]);
+  return t;
+}
+async function renderShell(){
+  try{ if(!DEPTS.length && ME.role !== "PRINTER") DEPTS = (await api("departments")).departments; }catch(e){ if(!SESS) return; }
+  const tabs = tabsFor(); TAB = tabs[0][0];
+  const main = h("div", { class:"wrap", id:"main" });
+  const bar = h("div", { class:"tabs" });
+  tabs.forEach(([k, label]) => {
+    const b = h("button", { class:"tab"+(k === TAB ? " on" : ""), text:label });
+    b.onclick = () => { TAB = k; [...bar.children].forEach(c => c.classList.toggle("on", c === b)); openTab(); };
+    bar.append(b);
+  });
+  const out = h("button", { text:"خروج" });
+  out.onclick = async () => { try{ await api("logout"); }catch(e){} localOut(); };
+  app.replaceChildren(
+    h("div", { class:"hdr" }, h("div", null, ME.full_name, h("small", { text:ROLE_AR[ME.role] })), out),
+    bar, main);
+  openTab();
+}
+function openTab(){
+  const m = document.getElementById("main");
+  m.replaceChildren();
+  if(TAB === "dash") renderDash(m);
+  else if(TAB === "reqs") renderReqs(m);
+  else if(TAB === "users") renderUsers(m);
+  else m.append(h("div", { class:"card" }, h("h2", { text:"لوحة الطباعة" }), h("p", { class:"muted", text:"ستتوفر في مرحلة الطباعة القادمة." })));
+}
+
+/* ---------- لوحة المعلومات ---------- */
+async function renderDash(m){
+  m.append(h("p", { class:"muted", text:"جاري التحميل..." }));
+  let s; try{ s = await api("stats"); }catch(e){ m.replaceChildren(h("div", { class:"card", text:e.message })); return; }
+  const b = s.by_status || {}, n = (k) => b[k] || 0;
+  const approved = n("APPROVED") + n("READY_TO_PRINT") + n("PRINTED") + n("DELIVERED");
+  const passed = n("VERIFIED") + n("PENDING_APPROVAL") + approved;
+  const cards = [
+    ["الموظفون المسجلون", s.employees], ["طلبات جديدة", n("NEW")], ["قيد التدقيق", n("UNDER_REVIEW")],
+    ["معادة للتعديل", n("RETURNED")], ["اجتازت التدقيق", passed], ["بانتظار موافقة المدير", n("PENDING_APPROVAL")],
+    ["موافق عليها", approved], ["جاهزة للطباعة", n("READY_TO_PRINT")], ["مطبوعة", n("PRINTED")],
+    ["مُسلَّمة", n("DELIVERED")], ["مرفوضة", n("REJECTED")], ["إجمالي الطلبات", s.requests_total]
+  ];
+  m.replaceChildren(h("div", { class:"cards" }, cards.map(([l, v]) => h("div", { class:"stat" }, h("b", { text:v }), h("span", { text:l })))));
+  const bars = (rows) => {
+    const max = Math.max(1, ...rows.map(r => r[1]));
+    return rows.length ? rows.map(([l, v]) => h("div", { class:"barrow" }, h("div", { class:"n", text:l }),
+      h("div", { class:"t" }, h("i", { style:"width:"+(v/max*100)+"%" })), h("div", { class:"c", text:v }))) : h("p", { class:"muted", text:"لا توجد بيانات بعد." });
+  };
+  m.append(h("div", { class:"card", style:"margin-top:12px" }, h("h2", { text:"الطلبات حسب الحالة" }),
+    bars(Object.keys(b).map(k => [STATUS_AR[k] || k, b[k]]))));
+  m.append(h("div", { class:"card" }, h("h2", { text:"الطلبات حسب القسم" }),
+    bars((s.by_department || []).map(d => [d.name, d.count]))));
+}
+
+/* ---------- قائمة الطلبات ---------- */
+const F = { q:"", status:"", department_id:"", sort:"new", offset:0 };
+const PAGE = 20;
+function renderReqs(m){
+  if(ME.role === "VERIFIER" && !renderReqs.init){ F.status = "UNDER_REVIEW"; renderReqs.init = true; }
+  const q = h("input", { placeholder:"بحث بالاسم، الرقم الوظيفي، رقم الطلب، رقم الباج، الهاتف", value:F.q });
+  let to; q.oninput = () => { clearTimeout(to); to = setTimeout(() => { F.q = q.value.trim(); F.offset = 0; load(); }, 450); };
+  const st = h("select", null, h("option", { value:"", text:"كل الحالات" }),
+    Object.keys(STATUS_AR).map(k => h("option", { value:k, text:STATUS_AR[k], selected: F.status === k ? "selected" : null })));
+  st.onchange = () => { F.status = st.value; F.offset = 0; load(); };
+  const dp = h("select", null, h("option", { value:"", text:"كل الأقسام" }));
+  DEPTS.filter(d => d.parent_id === null).forEach(r => {
+    dp.append(h("option", { value:r.id, text:r.name_ar, selected: String(F.department_id) === String(r.id) ? "selected" : null }));
+    DEPTS.filter(c => c.parent_id === r.id).forEach(c =>
+      dp.append(h("option", { value:c.id, text:"— "+c.name_ar, selected: String(F.department_id) === String(c.id) ? "selected" : null })));
+  });
+  dp.onchange = () => { F.department_id = dp.value; F.offset = 0; load(); };
+  const so = h("select", null, h("option", { value:"new", text:"الأحدث أولاً" }), h("option", { value:"old", text:"الأقدم أولاً" }));
+  so.value = F.sort; so.onchange = () => { F.sort = so.value; F.offset = 0; load(); };
+  const list = h("div"), pager = h("div", { class:"pager" });
+  m.append(h("div", { class:"card" }, q, h("div", { class:"row", style:"margin-top:8px" }, st, dp, so)), list, pager);
+
+  async function load(){
+    list.replaceChildren(h("p", { class:"muted", text:"جاري التحميل..." }));
+    try{
+      const j = await api("requests.list", { q:F.q, status:F.status, department_id:F.department_id, sort:F.sort, limit:PAGE, offset:F.offset });
+      list.replaceChildren();
+      if(!j.rows.length) list.append(h("div", { class:"card muted", text:"لا توجد طلبات مطابقة." }));
+      j.rows.forEach(r => {
+        const it = h("div", { class:"item" },
+          h("div", { class:"top" },
+            h("div", null, h("div", { class:"nm", text:r.name_ar }), h("div", { class:"sub ltr", style:"text-align:right;direction:ltr", text:r.name_en })),
+            chip(r.status)),
+          h("div", { class:"sub", text: r.job_title_ar + " · " + r.department }),
+          h("div", { class:"sub" }, "طلب ", h("b", { class:"ltr", text:r.request_no }), " · ", day(r.submitted_at),
+            r.badge_serial ? [" · باج ", h("b", { text:r.badge_serial }), " · ينتهي ", day(r.valid_to)] : ""));
+        it.onclick = () => openRequest(r.id);
+        list.append(it);
+      });
+      const from = j.total ? F.offset + 1 : 0, to2 = Math.min(F.offset + PAGE, j.total);
+      const prev = h("button", { class:"btn sec", text:"السابق", disabled: F.offset === 0 ? "disabled" : null });
+      const next = h("button", { class:"btn sec", text:"التالي", disabled: F.offset + PAGE >= j.total ? "disabled" : null });
+      prev.onclick = () => { F.offset = Math.max(0, F.offset - PAGE); load(); window.scrollTo(0, 0); };
+      next.onclick = () => { F.offset += PAGE; load(); window.scrollTo(0, 0); };
+      pager.replaceChildren(prev, h("span", { class:"muted", text: from+"–"+to2+" من "+j.total }), next);
+    }catch(e){ list.replaceChildren(h("div", { class:"card", text:e.message })); }
+  }
+  load();
+}
+
+/* ---------- تفاصيل الطلب والتدقيق ---------- */
+async function openRequest(id){
+  const m = document.getElementById("main");
+  m.replaceChildren(h("p", { class:"muted", text:"جاري التحميل..." }));
+  let d;
+  try{ d = await api("requests.get", { id }); }catch(e){ toast(e.message, true); m.replaceChildren(); renderReqs(m); return; }
+  const r = d.request, e = d.employee;
+  const back = h("button", { class:"btn sec", text:"← رجوع للقائمة" });
+  back.onclick = () => { m.replaceChildren(); renderReqs(m); };
+  const kv = (k, v) => h("div", { class:"kv" }, h("span", { text:k }), h("span", { text: v || "—" }));
+  const photo = d.documents.filter(x => x.kind === "PHOTO_ORIGINAL");
+  const forms = d.documents.filter(x => x.kind === "PAPER_FORM");
+  const thumb = (x, label) => h("div", { class:"thumb", title:label, onclick:() => x.url && openViewer(x.url) }, x.url ? h("img", { src:x.url, alt:label }) : "—");
+  const info = h("div", { class:"card" },
+    h("div", { class:"top", style:"display:flex;justify-content:space-between;align-items:center" },
+      h("h2", { text:"طلب "+r.request_no }), chip(r.status)),
+    kv("الاسم بالعربية", e.name_ar), kv("الاسم بالإنجليزية", e.name_en),
+    kv("العنوان الوظيفي (ع)", e.job_title_ar), kv("العنوان الوظيفي (E)", e.job_title_en),
+    kv("مكان العمل", r.department), kv("الرقم الوظيفي", e.job_number), kv("الهاتف", e.phone), kv("البريد", e.email),
+    kv("تاريخ التسجيل", fmt(r.submitted_at)),
+    r.return_reason ? kv("سبب الإرجاع/الرفض", r.return_reason) : null,
+    d.badge ? [kv("رقم الباج", d.badge.serial_no), kv("تاريخ الإصدار", day(d.badge.issued_at)), kv("ينتهي في", day(d.badge.valid_to))] : null);
+  const docs = h("div", { class:"card" }, h("h3", { text:"الصورة الشخصية" }), h("div", { class:"thumbs" }, photo.map(x => thumb(x, "الصورة الشخصية"))),
+    h("h3", { text:"الاستمارة الورقية (اضغط للتكبير)" }), h("div", { class:"thumbs" }, forms.map(x => thumb(x, "صفحة "+x.page_no))));
+  m.replaceChildren(back, h("div", { style:"height:10px" }), info, docs);
+
+  if(ME.role === "VERIFIER" && r.status === "UNDER_REVIEW") m.append(reviewForm(r.id));
+
+  if(d.reviews.length) m.append(h("div", { class:"card" }, h("h2", { text:"سجل التدقيق" }), d.reviews.map(v =>
+    h("div", { class:"kv" }, h("span", { text:(v.reviewer && v.reviewer.full_name || "—")+" · "+fmt(v.reviewed_at) }),
+      h("span", { text:(v.decision === "VERIFIED" ? "اعتماد" : "إرجاع")+(v.notes ? " – "+v.notes : "") })))));
+  const hist = d.history.filter(x => x.action === "STATUS_CHANGE");
+  if(hist.length) m.append(h("div", { class:"card" }, h("h2", { text:"مسار الطلب" }), h("div", { class:"tl" }, hist.map(x =>
+    h("div", { text: fmt(x.at)+" — "+(STATUS_AR[x.details && x.details.to] || (x.details && x.details.to) || "")+" ("+(ROLE_AR[x.actor_role] || "النظام")+")" })))));
+}
+function reviewForm(id){
+  const sel = {};
+  const rows = CHECKS.map(([k, label]) => {
+    const s = h("select", null, h("option", { value:"", text:"اختر..." }), Object.keys(CHECK_AR).map(v => h("option", { value:v, text:CHECK_AR[v] })));
+    sel[k] = s; return h("div", { class:"ck" }, h("div", { text:label }), s);
+  });
+  const notes = h("textarea", { placeholder:"سبب الإرجاع للموظف (مطلوب عند الإرجاع)، مثال: يرجى تعديل الاسم بالإنجليزية لعدم مطابقته للاستمارة" });
+  const ok = h("button", { class:"btn green block", style:"margin-top:12px", text:"اعتماد التدقيق" });
+  const ret = h("button", { class:"btn red block", style:"margin-top:8px", text:"إعادة إلى الموظف للتعديل" });
+  async function send(decision){
+    const checklist = {};
+    for(const [k] of CHECKS){ if(!sel[k].value){ toast("أكمل جميع بنود القائمة", true); return; } checklist[k] = sel[k].value; }
+    if(decision === "VERIFIED" && Object.values(checklist).some(v => v !== "MATCH")){ toast("لا يمكن الاعتماد وفي القائمة بنود غير مطابقة", true); return; }
+    if(decision === "RETURNED" && notes.value.trim().length < 5){ toast("اكتب سبب الإرجاع", true); return; }
+    if(!confirm(decision === "VERIFIED" ? "اعتماد التدقيق وإرسال الطلب لموافقة المدير؟" : "إعادة الطلب للموظف؟")) return;
+    ok.disabled = ret.disabled = true;
+    try{
+      await api("review.submit", { request_id:id, decision, checklist, notes:notes.value });
+      toast("تم تسجيل قرارك");
+      const m = document.getElementById("main"); m.replaceChildren(); renderReqs(m);
+    }catch(e){ toast(e.message, true); ok.disabled = ret.disabled = false; }
+  }
+  ok.onclick = () => send("VERIFIED"); ret.onclick = () => send("RETURNED");
+  return h("div", { class:"card" }, h("h2", { text:"قائمة التدقيق" }), rows, h("label", { text:"ملاحظات / سبب الإرجاع" }), notes, ok, ret);
+}
+
+/* ---------- الحسابات ---------- */
+async function renderUsers(m){
+  const isSuper = ME.role === "SUPER_ADMIN";
+  const box = h("div");
+  async function load(){
+    box.replaceChildren(h("p", { class:"muted", text:"جاري التحميل..." }));
+    try{
+      const j = await api("users.list"); box.replaceChildren();
+      j.users.forEach(u => {
+        const body = h("div", { class:"item", style:"cursor:default" },
+          h("div", { class:"top" }, h("div", null, h("div", { class:"nm", text:u.full_name }), h("div", { class:"sub ltr", style:"direction:ltr;text-align:right", text:u.username })),
+            h("span", { class:"chip "+(u.is_active ? "on" : "off"), text:u.is_active ? "فعّال" : "معطّل" })),
+          h("div", { class:"sub", text:ROLE_AR[u.role]+" · آخر دخول: "+fmt(u.last_login_at) }));
+        if(isSuper){
+          const role = h("select", null, Object.keys(ROLE_AR).map(k => h("option", { value:k, text:ROLE_AR[k], selected: u.role === k ? "selected" : null })));
+          const pw = h("input", { class:"ltr", type:"password", placeholder:"كلمة مرور جديدة (اتركها فارغة للإبقاء)", autocomplete:"new-password" });
+          const save = h("button", { class:"btn", text:"حفظ" });
+          const tog = h("button", { class:"btn sec", text:u.is_active ? "تعطيل الحساب" : "تفعيل الحساب" });
+          const self = u.id === ME.id; if(self){ role.disabled = true; tog.disabled = true; }
+          save.onclick = async () => {
+            const p = { id:u.id }; if(role.value !== u.role) p.role = role.value; if(pw.value) p.password = pw.value;
+            if(Object.keys(p).length === 1){ toast("لا توجد تغييرات"); return; }
+            try{ await api("users.update", p); toast("تم الحفظ"); load(); }catch(e){ toast(e.message, true); }
+          };
+          tog.onclick = async () => { try{ await api("users.update", { id:u.id, is_active:!u.is_active }); load(); }catch(e){ toast(e.message, true); } };
+          body.append(h("div", { class:"row", style:"margin-top:8px" }, role, pw), h("div", { class:"row", style:"margin-top:8px" }, save, tog));
+        }
+        box.append(body);
+      });
+    }catch(e){ box.replaceChildren(h("div", { class:"card", text:e.message })); }
+  }
+  if(isSuper){
+    const un = h("input", { class:"ltr", placeholder:"اسم المستخدم (حروف إنجليزية صغيرة)", autocapitalize:"none" });
+    const fn = h("input", { placeholder:"الاسم الكامل" });
+    const rl = h("select", null, Object.keys(ROLE_AR).map(k => h("option", { value:k, text:ROLE_AR[k], selected: k === "VERIFIER" ? "selected" : null })));
+    const pw = h("input", { class:"ltr", type:"password", placeholder:"كلمة المرور (10 أحرف على الأقل، حروف وأرقام)", autocomplete:"new-password" });
+    const add = h("button", { class:"btn block", style:"margin-top:10px", text:"إنشاء الحساب" });
+    add.onclick = async () => {
+      add.disabled = true;
+      try{ await api("users.create", { username:un.value, full_name:fn.value, role:rl.value, password:pw.value }); toast("تم إنشاء الحساب"); un.value = fn.value = pw.value = ""; load(); }
+      catch(e){ toast(e.message, true); }
+      add.disabled = false;
+    };
+    m.append(h("div", { class:"card" }, h("h2", { text:"إضافة حساب" }), un, h("div", { style:"height:8px" }), fn, h("div", { style:"height:8px" }), rl, h("div", { style:"height:8px" }), pw, add));
+  }
+  m.append(box); load();
+}
+
+/* ---------- التشغيل ---------- */
+(async function boot(){
+  if(!SESS){ renderLogin(); return; }
+  try{ ME = (await api("me")).user; renderShell(); }catch(e){ if(SESS) renderLogin(); }
+})();
+</script>
+</body>
+</html>
