@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>استوديو تصميم الباجات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Tajawal:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/konva/9.3.6/konva.min.js"></script>
+<script>window.Konva||document.write('<script src="https://cdn.jsdelivr.net/npm/konva@9.3.6/konva.min.js"><\/script>')</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>window.qrcode||document.write('<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"><\/script>')</script>
+<style>
+:root{--p:#0b6e8a;--pd:#084f63;--bg:#f3f6f8;--card:#fff;--tx:#17262e;--mu:#62757f;--bd:#d5dfe4;--err:#c0392b;--ok:#1e8449}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Cairo',system-ui,-apple-system,'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--tx);line-height:1.5;font-size:15px}
+.wrap{max-width:900px;margin:0 auto;padding:12px}
+.card{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 2px 10px rgba(11,60,80,.08);margin-bottom:10px}
+h2{font-size:17px;margin:0 0 8px}
+.muted{color:var(--mu);font-size:13px}
+.btn{border:0;border-radius:10px;padding:10px 14px;font:inherit;font-weight:700;font-size:14px;cursor:pointer;background:var(--p);color:#fff}
+.btn:active{background:var(--pd)}.btn:disabled{opacity:.5}
+.btn.sec{background:#e4eef2;color:var(--pd)}.btn.red{background:var(--err)}.btn.green{background:var(--ok)}
+.btn.sm{padding:6px 10px;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label{display:block;font-weight:600;margin:8px 0 3px;font-size:13px}
+input,select,textarea{width:100%;padding:9px;border:1.5px solid var(--bd);border-radius:9px;font:inherit;font-size:15px;background:#fff;color:var(--tx)}
+input[type=color]{padding:2px;height:40px}
+input[type=checkbox]{width:auto}
+textarea{min-height:60px}
+.ltr{direction:ltr;text-align:left}
+.hdr{background:var(--pd);color:#fff;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.hdr b{font-size:16px}
+.hdr .btn{background:rgba(255,255,255,.2)}
+.chip{display:inline-block;border-radius:20px;padding:1px 10px;font-size:12px;font-weight:700;background:#e4eef2;color:var(--pd)}
+.chip.ok{background:#e8f6ee;color:var(--ok)}.chip.warn{background:#fdf2dc;color:#b9770e}
+.item{background:#fff;border-radius:12px;padding:12px;margin-bottom:8px;box-shadow:0 1px 6px rgba(11,60,80,.07)}
+.bar{display:flex;gap:6px;flex-wrap:wrap;padding:8px 10px;background:#fff;border-bottom:1px solid var(--bd);align-items:center}
+.work{display:flex;flex-direction:column}
+@media(min-width:900px){.work{flex-direction:row;align-items:flex-start}.cw{flex:1;max-height:calc(100vh - 150px)!important}.panel{width:360px;max-height:calc(100vh - 150px);overflow:auto}}
+.cw{overflow:auto;background:#cfd8dd;padding:12px;max-height:58vh;text-align:center}
+#stage{display:inline-block;direction:ltr;box-shadow:0 2px 14px rgba(0,0,0,.35);background:#fff;touch-action:manipulation}
+.panel{background:#fff}
+.tabs{display:flex;border-bottom:1px solid var(--bd);position:sticky;top:0;background:#fff;z-index:2}
+.tabs button{flex:1;border:0;background:none;padding:11px 4px;font:inherit;font-weight:600;color:var(--mu);cursor:pointer;border-bottom:3px solid transparent}
+.tabs button.on{color:var(--p);border-bottom-color:var(--p)}
+.pane{padding:12px}
+.lay{display:flex;align-items:center;gap:4px;padding:7px 6px;border-bottom:1px solid #edf1f3;cursor:pointer;border-radius:8px}
+.lay.on{background:#e4f1f5}
+.lay .nm{flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lay button{border:0;background:#eef3f5;border-radius:7px;width:30px;height:30px;font-size:14px;cursor:pointer}
+.add button{display:block;width:100%;margin-bottom:8px;text-align:right}
+.banner{background:#fdf2dc;color:#8a5a00;padding:8px 12px;font-size:14px}
+.hidden{display:none!important}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#17262e;color:#fff;padding:11px 16px;border-radius:12px;z-index:60;max-width:90%;font-size:14px}
+.toast.bad{background:var(--err)}
+</style>
+</head>
+<body>
+
+<!-- قائمة القوالب -->
+<div id="list">
+  <div class="hdr"><b>استوديو تصميم الباجات</b><a class="btn sm" style="text-decoration:none" href="admin.html">← لوحة الإدارة</a></div>
+  <div class="wrap">
+    <div class="card">
+      <h2>قالب جديد</h2>
+      <div class="row"><input id="newname" placeholder="اسم القالب، مثل: باج الموظفين 2026" style="flex:1;min-width:200px"><button class="btn" id="newbtn">إنشاء</button></div>
+    </div>
+    <div id="tpls"><p class="muted">جاري التحميل...</p></div>
+  </div>
+</div>
+
+<!-- المحرر -->
+<div id="editor" class="hidden">
+  <div class="hdr">
+    <div><b id="t-name"></b> <span id="t-ver" class="chip"></span> <span id="t-def" class="chip ok hidden">افتراضي</span></div>
+    <div class="row">
+      <button class="btn sm" id="b-save">حفظ</button>
+      <button class="btn sm green" id="b-approve">حفظ واعتماد القالب</button>
+      <button class="btn sm" id="b-new">نسخة جديدة</button>
+      <button class="btn sm" id="b-default">تعيين افتراضي</button>
+      <button class="btn sm" id="b-back">القوالب</button>
+    </div>
+  </div>
+  <div id="ro-banner" class="banner hidden">هذه النسخة معتمدة ولا يمكن تعديلها. اضغط «نسخة جديدة» إذا تريد تعديل التصميم، والباجات القديمة تبقى كما صدرت.</div>
+  <div class="bar">
+    <button class="btn sm" id="s-front">الوجه الأمامي</button>
+    <button class="btn sm sec" id="s-back">الوجه الخلفي</button>
+    <span style="flex:1"></span>
+    <select id="vsel" style="width:auto;padding:6px"></select>
+    <button class="btn sm sec" id="u-undo">↶</button>
+    <button class="btn sm sec" id="u-redo">↷</button>
+    <button class="btn sm sec" id="z-out">－</button>
+    <button class="btn sm sec" id="z-in">＋</button>
+    <button class="btn sm sec" id="z-fit">ملاءمة</button>
+    <button class="btn sm sec" id="pv">معاينة</button>
+  </div>
+  <div class="work">
+    <div class="cw" id="cw"><div id="stage"></div></div>
+    <div class="panel">
+      <div class="tabs" id="ptabs">
+        <button data-t="add" class="on">إضافة</button><button data-t="layers">الطبقات</button><button data-t="props">الخصائص</button><button data-t="card">البطاقة</button>
+      </div>
+      <div class="pane" id="p-add"></div>
+      <div class="pane hidden" id="p-layers"></div>
+      <div class="pane hidden" id="p-props"></div>
+      <div class="pane hidden" id="p-card"></div>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+"use strict";
+const API = "https://ppcglbgcaqgjmapyyxae.supabase.co/functions/v1/quick-responder";
+const SESS = sessionStorage.getItem("sess") || "";
+if(!SESS) location.replace("admin.html");
+
+const PPM = 12;            // بكسل لوحة الرسم لكل ملم
+const PT = 0.3528;         // ملم لكل نقطة (pt)
+const FONTS = ["Cairo","Tajawal","Noto Sans Arabic"];
+const FIELDS = [
+  ["name_ar","الاسم بالعربية"],["name_en","الاسم بالإنجليزية"],
+  ["job_title_ar","العنوان الوظيفي بالعربية"],["job_title_en","العنوان الوظيفي بالإنجليزية"],
+  ["department","القسم / مكان العمل"],["job_number","الرقم الوظيفي"],["serial","رقم الباج التسلسلي"],
+  ["issue_date","تاريخ الإصدار"],["expiry_date","تاريخ الانتهاء"]
+];
+const LTR_FIELDS = ["name_en","job_title_en","job_number","serial","issue_date","expiry_date"];
+const SAMPLE = { name_ar:"علي حسن كريم", name_en:"Ali Hassan Karim", job_title_ar:"تقني مختبر", job_title_en:"Lab Technician",
+  department:"الطوارئ ← كادر المختبر", job_number:"10245", serial:"1483", issue_date:"25/11/2026", expiry_date:"25/11/2028" };
+const ROLE_NAMES = { logo:"شعار", signature:"توقيع", stamp:"ختم", image:"صورة" };
+
+/* ---------- أدوات ---------- */
+const $ = (id) => document.getElementById(id);
+function h(tag, props, ...kids){
+  const e = document.createElement(tag);
+  if(props) for(const k in props){
+    const v = props[k];
+    if(k === "class") e.className = v;
+    else if(k.slice(0,2) === "on") e[k] = v;
+    else if(k === "text") e.textContent = v;
+    else if(v !== false && v != null) e.setAttribute(k, v);
+  }
+  kids.flat(Infinity).forEach(c => { if(c == null || c === false) return; e.append(c.nodeType ? c : document.createTextNode(String(c))); });
+  return e;
+}
+function toast(m, bad){ const t = $("toast"); t.textContent = m; t.className = "toast" + (bad ? " bad" : ""); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add("hidden"), 3500); }
+async function api(action, params){
+  let r;
+  try{ r = await fetch(API, { method:"POST", headers:{ "Content-Type":"application/json", "x-session":SESS }, body:JSON.stringify(Object.assign({ action }, params || {})) }); }
+  catch(e){ throw new Error("تعذر الاتصال بالخادم. تحقق من الإنترنت."); }
+  const j = await r.json().catch(() => ({}));
+  if(r.status === 401){ sessionStorage.removeItem("sess"); location.replace("admin.html"); throw new Error(j.error || "انتهت الجلسة"); }
+  if(!r.ok) throw new Error(j.error || "حدث خطأ");
+  return j;
+}
+const uid = () => "e" + Math.random().toString(36).slice(2, 10);
+const rnd = (n) => Math.round(n * 100) / 100;
+const fieldLabel = (k) => (FIELDS.find(f => f[0] === k) || [k, k])[1];
+
+/* ---------- الحالة ---------- */
+let T = null, V = null, VS = [];
+let D = { front:[], back:[] };
+let S = { width_mm:54, height_mm:85.6, dpi:300, bleed_mm:0, safe_mm:3 };
+let side = "front", selId = null, RO = false, dirty = false, preview = false, guides = true, zoom = 1, tab = "add";
+let stage = null, layer = null, tr = null;
+const imgs = {};
+let hist = [], hi = -1;
+const els = () => D[side];
+const find = (id) => els().find(e => e.id === id);
+
+/* ---------- نماذج العناصر ---------- */
+const base = (o) => Object.assign({ id:uid(), name:"", x:5, y:5, w:20, h:8, rot:0, opacity:1, locked:false, hidden:false }, o);
+const mkText = (o) => base(Object.assign({ type:"text", name:"نص ثابت", text:"نص", font:"Cairo", size:10, bold:true, color:"#111111", align:"center", dir:"rtl", w:40, h:6 }, o));
+const mkField = (key, o) => base(Object.assign({ type:"field", field:key, name:fieldLabel(key), prefix:"", font:"Cairo", size:11, bold:true, color:"#111111",
+  align:"center", dir: LTR_FIELDS.includes(key) ? "ltr" : "rtl", shrink:true, min_pct:60, max_chars:80, w:44, h:6 }, o));
+const mkPhoto = (o) => base(Object.assign({ type:"photo", name:"صورة الموظف", w:21.6, h:21.7, radius:3.5, border_w:0, border_color:"#e04b4b", focus:30 }, o));
+const mkQR = (o) => base(Object.assign({ type:"qr", name:"رمز QR للتحقق", w:11, h:11 }, o));
+const mkImage = (role, o) => base(Object.assign({ type:"image", role, name:ROLE_NAMES[role] || "صورة", asset:null, fit:"contain", w:16, h:10 }, o));
+
+/* ---------- الرسم ---------- */
+function bidi(t, dir){ return (dir === "ltr" ? "\u2066" : "\u2067") + t + "\u2069"; }
+function fieldValue(el){
+  let v = SAMPLE[el.field] || "";
+  if(el.max_chars && v.length > el.max_chars) v = v.slice(0, el.max_chars - 1) + "…";
+  return (el.prefix || "") + v;
+}
+function rrPath(ctx, x, y, w, h, r){
+  ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
+}
+let samplePhotoCv = null;
+function samplePhoto(){
+  if(samplePhotoCv) return samplePhotoCv;
+  const c = document.createElement("canvas"); c.width = 300; c.height = 400; const x = c.getContext("2d");
+  const g = x.createLinearGradient(0, 0, 0, 400); g.addColorStop(0, "#dfe7ec"); g.addColorStop(1, "#b9c7cf");
+  x.fillStyle = g; x.fillRect(0, 0, 300, 400);
+  x.fillStyle = "#8ea0aa"; x.beginPath(); x.arc(150, 140, 62, 0, 7); x.fill();
+  x.beginPath(); x.ellipse(150, 400, 120, 150, 0, Math.PI, 0); x.fill();
+  samplePhotoCv = c; return c;
+}
+function qrCanvas(text){
+  const c = document.createElement("canvas"); c.width = c.height = 400; const x = c.getContext("2d");
+  x.fillStyle = "#fff"; x.fillRect(0, 0, 400, 400);
+  try{
+    const q = window.qrcode(0, "M"); q.addData(text); q.make();
+    const n = q.getModuleCount(), cell = 400 / (n + 2); x.fillStyle = "#000";
+    for(let r = 0; r < n; r++) for(let k = 0; k < n; k++) if(q.isDark(r, k)) x.fillRect((k + 1) * cell, (r + 1) * cell, Math.ceil(cell), Math.ceil(cell));
+  }catch(e){ x.fillStyle = "#000"; x.font = "bold 80px sans-serif"; x.textAlign = "center"; x.fillText("QR", 200, 220); }
+  return c;
+}
+function nodeImage(el){
+  const w = el.w * PPM, hh = el.h * PPM, img = el.asset && imgs[el.asset];
+  const g = new Konva.Group({ width:w, height:hh });
+  if(img){
+    const cfg = { image:img, width:w, height:hh };
+    if(el.fit === "contain"){ const r = Math.min(w / img.naturalWidth, hh / img.naturalHeight); cfg.width = img.naturalWidth * r; cfg.height = img.naturalHeight * r; cfg.x = (w - cfg.width) / 2; cfg.y = (hh - cfg.height) / 2; }
+    g.add(new Konva.Image(cfg));
+    g.add(new Konva.Rect({ width:w, height:hh, fill:"rgba(0,0,0,0)" }));
+  }else{
+    g.add(new Konva.Rect({ width:w, height:hh, stroke:"#0b6e8a", dash:[6, 4], strokeWidth:1.5, fill:"rgba(11,110,138,0.06)" }));
+    g.add(new Konva.Text({ width:w, height:hh, text:el.name + " (ارفع صورة)", align:"center", verticalAlign:"middle", fontSize:Math.max(8, Math.min(w, hh) / 6), fontFamily:"Cairo", fill:"#0b6e8a" }));
+  }
+  return g;
+}
+function nodeText(el, value){
+  const w = el.w * PPM, hh = el.h * PPM;
+  let size = el.size * PT * PPM; const style = el.bold ? "bold" : "normal";
+  const txt = bidi(value, el.dir), fam = '"' + el.font + '", sans-serif';
+  if(el.type === "field" && el.shrink){
+    const t = new Konva.Text({ text:txt, fontFamily:fam, fontStyle:style, fontSize:size });
+    const min = size * ((el.min_pct || 60) / 100);
+    while(t.getTextWidth() > w && size > min){ size -= 0.5; t.fontSize(size); }
+  }
+  return new Konva.Text({ width:w, height:hh, text:txt, fontFamily:fam, fontStyle:style, fontSize:size, fill:el.color, align:el.align, verticalAlign:"middle", wrap:"none" });
+}
+function nodePhoto(el){
+  const w = el.w * PPM, hh = el.h * PPM, r = Math.min(el.radius * PPM, w / 2, hh / 2);
+  const g = new Konva.Group({ width:w, height:hh, clipFunc:(ctx) => { ctx.beginPath(); rrPath(ctx, 0, 0, w, hh, r); ctx.closePath(); } });
+  const im = samplePhoto(), iw = im.width, ih = im.height, ratio = w / hh; let crop;
+  if(iw / ih > ratio){ const cw = ih * ratio; crop = { x:(iw - cw) / 2, y:0, width:cw, height:ih }; }
+  else{ const ch = iw / ratio; crop = { x:0, y:(ih - ch) * ((el.focus || 0) / 100), width:iw, height:ch }; }
+  g.add(new Konva.Image({ image:im, width:w, height:hh, crop }));
+  if(el.border_w > 0) g.add(new Konva.Rect({ width:w, height:hh, cornerRadius:r, stroke:el.border_color, strokeWidth:el.border_w * PPM * 2, listening:false }));
+  return g;
+}
+function nodeQR(el){
+  const w = el.w * PPM, hh = el.h * PPM;
+  return new Konva.Image({ image:qrCanvas("https://example.org/verify/xxxxxxxxxxxxxxxx"), width:w, height:hh });
+}
+function makeNode(el){
+  let n = null;
+  if(el.type === "image") n = nodeImage(el);
+  else if(el.type === "text") n = nodeText(el, el.text);
+  else if(el.type === "field") n = nodeText(el, fieldValue(el));
+  else if(el.type === "photo") n = nodePhoto(el);
+  else if(el.type === "qr") n = nodeQR(el);
+  if(!n) return null;
+  n.setAttrs({ id:el.id, x:el.x * PPM, y:el.y * PPM, rotation:el.rot || 0, opacity:el.opacity == null ? 1 : el.opacity });
+  const editable = !RO && !el.locked && !preview;
+  n.draggable(editable);
+  n.listening(!el.locked && !preview);
+  n.on("click tap dragstart", () => select(el.id, true));
+  n.on("dragend", () => { el.x = rnd(n.x() / PPM); el.y = rnd(n.y() / PPM); setTimeout(() => commit({ props:true }), 0); });
+  n.on("transformend", () => {
+    el.w = rnd(n.width() * n.scaleX() / PPM); el.h = rnd(n.height() * n.scaleY() / PPM);
+    el.x = rnd(n.x() / PPM); el.y = rnd(n.y() / PPM); el.rot = rnd(n.rotation());
+    n.scaleX(1); n.scaleY(1);
+    setTimeout(() => commit({ props:true }), 0);
+  });
+  return n;
+}
+function initStage(){
+  stage = new Konva.Stage({ container:"stage", width:100, height:100 });
+  layer = new Konva.Layer(); stage.add(layer);
+  stage.on("click tap", (e) => { if(e.target === stage || (e.target.name && e.target.name() === "cardbg")) select(null, false); });
+}
+function renderCanvas(){
+  if(!stage) initStage();
+  const W = S.width_mm * PPM, H = S.height_mm * PPM;
+  stage.width(W * zoom); stage.height(H * zoom); stage.scale({ x:zoom, y:zoom });
+  layer.destroyChildren();
+  layer.add(new Konva.Rect({ name:"cardbg", x:0, y:0, width:W, height:H, fill:"#ffffff" }));
+  els().forEach(el => { if(el.hidden) return; const n = makeNode(el); if(n) layer.add(n); });
+  if(guides && !preview){
+    const m = S.safe_mm * PPM;
+    if(m > 0) layer.add(new Konva.Rect({ x:m, y:m, width:W - 2 * m, height:H - 2 * m, stroke:"#e67e22", dash:[6, 5], strokeWidth:1, listening:false }));
+  }
+  tr = new Konva.Transformer({ rotateEnabled:true, keepRatio:false, anchorSize:16, borderStroke:"#0b6e8a", anchorStroke:"#0b6e8a", anchorFill:"#fff",
+    rotationSnaps:[0, 90, 180, 270], boundBoxFunc:(o, n) => (n.width < 10 || n.height < 10) ? o : n });
+  layer.add(tr); updateTr(); layer.batchDraw();
+}
+function updateTr(){
+  if(!tr) return;
+  const el = selId && find(selId); const n = el ? layer.findOne("#" + selId) : null;
+  tr.nodes(n && !RO && !el.locked && !preview ? [n] : []);
+  layer.batchDraw();
+}
+function fitZoom(){
+  const avail = $("cw").clientWidth - 28; zoom = Math.max(0.3, Math.min(3, avail / (S.width_mm * PPM)));
+}
+
+/* ---------- الحفظ والتراجع ---------- */
+const snap = () => JSON.stringify({ D, S });
+function pushHist(){
+  const s = snap(); if(hist[hi] === s) return;
+  hist = hist.slice(0, hi + 1); hist.push(s); if(hist.length > 60) hist.shift(); hi = hist.length - 1;
+}
+function restore(s){ const o = JSON.parse(s); D = o.D; S = o.S; if(selId && !find(selId)) selId = null; dirty = true; renderAll(); }
+function commit(o){
+  o = o || {}; if(RO) return; dirty = true; pushHist(); renderCanvas(); renderLayers();
+  if(o.props) renderProps(); if(o.card) renderCard();
+}
+$("u-undo").onclick = () => { if(hi > 0){ hi--; restore(hist[hi]); } };
+$("u-redo").onclick = () => { if(hi < hist.length - 1){ hi++; restore(hist[hi]); } };
+
+/* ---------- الاختيار والألسنة ---------- */
+function select(id, fromCanvas){
+  selId = id; updateTr(); renderLayers(); renderProps();
+  if(fromCanvas && id) setTab("props");
+}
+function setTab(t){
+  tab = t;
+  [...$("ptabs").children].forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  ["add", "layers", "props", "card"].forEach(k => $("p-" + k).classList.toggle("hidden", k !== t));
+}
+[...$("ptabs").children].forEach(b => b.onclick = () => setTab(b.dataset.t));
+function setSide(s){
+  side = s; selId = null;
+  $("s-front").className = "btn sm" + (s === "front" ? "" : " sec"); $("s-back").className = "btn sm" + (s === "back" ? "" : " sec");
+  renderCanvas(); renderLayers(); renderProps();
+}
+$("s-front").onclick = () => setSide("front"); $("s-back").onclick = () => setSide("back");
+$("z-in").onclick = () => { zoom = Math.min(4, zoom * 1.25); renderCanvas(); };
+$("z-out").onclick = () => { zoom = Math.max(0.25, zoom / 1.25); renderCanvas(); };
+$("z-fit").onclick = () => { fitZoom(); renderCanvas(); };
+$("pv").onclick = () => { preview = !preview; $("pv").className = "btn sm" + (preview ? "" : " sec"); if(preview) selId = null; renderCanvas(); };
+
+/* ---------- الصور المرفوعة ---------- */
+function loadImg(path, url){
+  return new Promise((res) => { const im = new Image(); im.crossOrigin = "anonymous"; im.onload = () => { imgs[path] = im; res(im); }; im.onerror = () => res(null); im.src = url; });
+}
+async function loadAssets(){
+  const paths = [...new Set([...D.front, ...D.back].map(e => e.asset).filter(Boolean))].filter(p => !imgs[p]);
+  if(!paths.length) return;
+  const j = await api("asset.urls", { paths });
+  await Promise.all(paths.map(p => j.urls[p] ? loadImg(p, j.urls[p]) : null));
+}
+async function uploadAsset(file){
+  if(!/^image\/(png|jpeg|webp)$/.test(file.type)) throw new Error("الصيغ المدعومة: PNG أو JPG أو WEBP");
+  if(file.size > 3 * 1024 * 1024) throw new Error("حجم الصورة يجب ألا يتجاوز 3 ميغابايت");
+  const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(file); });
+  const j = await api("asset.upload", { name:file.name, mime:file.type, b64 });
+  await loadImg(j.path, URL.createObjectURL(file));
+  return j.path;
+}
+function pickFile(cb){
+  const i = h("input", { type:"file", accept:"image/png,image/jpeg,image/webp" });
+  i.onchange = async () => { if(!i.files[0]) return; try{ toast("جاري رفع الصورة..."); await cb(i.files[0]); }catch(e){ toast(e.message, true); } };
+  i.click();
+}
+
+/* ---------- الإضافة ---------- */
+function addEl(el){ if(RO) return; els().push(el); selId = el.id; commit({ props:true }); setTab("props"); }
+function center(el){ el.x = rnd((S.width_mm - el.w) / 2); el.y = rnd((S.height_mm - el.h) / 2); return el; }
+function renderAdd(){
+  const box = $("p-add"); box.replaceChildren();
+  const btn = (txt, fn, cls) => h("button", { class:"btn " + (cls || "sec"), text:txt, onclick:() => { if(RO){ toast("النسخة معتمدة. أنشئ نسخة جديدة للتعديل.", true); return; } fn(); } });
+  box.append(h("div", { class:"add" },
+    btn("رفع خلفية هذا الوجه (من Canva)", () => pickFile(async (f) => {
+      const path = await uploadAsset(f);
+      D[side] = D[side].filter(e => e.role !== "bg");
+      D[side].unshift(base({ type:"image", role:"bg", name:"خلفية الوجه", asset:path, fit:"stretch", x:0, y:0, w:S.width_mm, h:S.height_mm, locked:true }));
+      commit({ props:true }); toast("تم رفع الخلفية");
+    }), "")));
+  const fsel = h("select", null, FIELDS.map(f => h("option", { value:f[0], text:f[1] })));
+  box.append(h("label", { text:"حقل متغير من قاعدة البيانات" }), fsel,
+    h("div", { class:"add", style:"margin-top:8px" },
+      btn("＋ إضافة الحقل", () => addEl(center(mkField(fsel.value)))),
+      btn("＋ نص ثابت", () => addEl(center(mkText()))),
+      btn("＋ صورة الموظف", () => addEl(center(mkPhoto()))),
+      btn("＋ رمز QR", () => addEl(center(mkQR())))));
+  const rsel = h("select", null, Object.keys(ROLE_NAMES).map(k => h("option", { value:k, text:ROLE_NAMES[k] })));
+  box.append(h("label", { text:"صورة ثابتة (شعار، توقيع، ختم)" }), rsel,
+    h("div", { class:"add", style:"margin-top:8px" }, btn("＋ إضافة وارفع الصورة", () => {
+      const el = center(mkImage(rsel.value)); addEl(el);
+      pickFile(async (f) => { el.asset = await uploadAsset(f); commit({ props:true }); });
+    })));
+  box.append(h("hr"), h("div", { class:"add" }, btn("تخطيط مقترح لهذا الوجه (مثل باجك الحالي)", () => {
+    if(els().filter(e => e.role !== "bg").length && !confirm("سيستبدل العناصر الحالية (عدا الخلفية). متابعة؟")) return;
+    applyStarter();
+  })));
+  box.append(h("p", { class:"muted", text:"ملاحظة: الصور تُعرض هنا ببيانات تجريبية. البيانات الحقيقية تدخل عند الإصدار." }));
+}
+function applyStarter(){
+  const keep = els().filter(e => e.role === "bg");
+  let L = [];
+  if(side === "front"){
+    L = [
+      mkPhoto({ x:15.1, y:18.2 }),
+      mkField("name_ar", { x:4, y:41.5, w:46, h:6.5, size:14 }),
+      mkField("name_en", { x:4, y:48, w:46, h:8, size:12 }),
+      mkField("job_title_en", { x:4, y:58.5, w:46, h:5, size:11 }),
+      mkField("job_title_ar", { x:4, y:63.5, w:46, h:6, size:11, color:"#d9542c" }),
+      mkField("expiry_date", { x:27, y:75.5, w:24, h:4, size:7, align:"right", prefix:"EXP: " }),
+      mkField("serial", { x:27, y:79.8, w:24, h:4, size:7, align:"right", prefix:"ID: " })
+    ];
+  }else{
+    L = [mkImage("signature", { x:33, y:60, w:17, h:8 }), mkImage("stamp", { x:29, y:60, w:10, h:10 }), mkQR({ x:39.5, y:70.5, w:11, h:11 })];
+  }
+  D[side] = keep.concat(L); selId = null; commit({ props:true }); toast("تم تطبيق التخطيط. عدّل المواضع كما تريد.");
+}
+
+/* ---------- الطبقات ---------- */
+function renderLayers(){
+  const box = $("p-layers"); box.replaceChildren();
+  const arr = els();
+  if(!arr.length){ box.append(h("p", { class:"muted", text:"لا توجد عناصر بعد. ابدأ من تبويب «إضافة»." })); return; }
+  [...arr].reverse().forEach((el) => {
+    const i = arr.indexOf(el), mk = (t, fn) => h("button", { text:t, onclick:(e) => { e.stopPropagation(); if(RO){ toast("النسخة معتمدة", true); return; } fn(); } });
+    const row = h("div", { class:"lay" + (el.id === selId ? " on" : "") },
+      h("div", { class:"nm", text:(el.hidden ? "◌ " : "") + (el.name || el.type) }),
+      mk(el.hidden ? "🚫" : "👁", () => { el.hidden = !el.hidden; commit({}); }),
+      mk(el.locked ? "🔒" : "🔓", () => { el.locked = !el.locked; commit({ props:true }); }),
+      mk("⧉", () => { const c = JSON.parse(JSON.stringify(el)); c.id = uid(); c.x += 2; c.y += 2; c.name += " (نسخة)"; arr.splice(i + 1, 0, c); selId = c.id; commit({ props:true }); }),
+      mk("↑", () => { if(i < arr.length - 1){ arr.splice(i + 1, 0, arr.splice(i, 1)[0]); commit({}); } }),
+      mk("↓", () => { if(i > 0){ arr.splice(i - 1, 0, arr.splice(i, 1)[0]); commit({}); } }),
+      mk("🗑", () => { if(confirm("حذف هذا العنصر؟")){ arr.splice(i, 1); if(selId === el.id) selId = null; commit({ props:true }); } }));
+    row.onclick = () => { select(el.id, false); setTab("props"); };
+    box.append(row);
+  });
+}
+
+/* ---------- الخصائص ---------- */
+function renderProps(){
+  const box = $("p-props"); box.replaceChildren();
+  const el = selId && find(selId);
+  if(!el){ box.append(h("p", { class:"muted", text:"اضغط على عنصر في التصميم أو من قائمة الطبقات لتعديل خصائصه." })); return; }
+  const fs = h("fieldset", { style:"border:0;padding:0;margin:0", disabled: RO ? "disabled" : null });
+  const set = (k, v) => { el[k] = v; commit({}); };
+  const num = (k, label, step, min, max) => {
+    const i = h("input", { type:"number", step:step || 0.1, class:"ltr", value:el[k] }); if(min != null) i.min = min; if(max != null) i.max = max;
+    i.onchange = () => { const v = parseFloat(i.value); if(!isFinite(v)){ i.value = el[k]; return; } set(k, v); };
+    return h("div", null, h("label", { text:label }), i);
+  };
+  const txt = (k, label, area, cls) => {
+    const i = area ? h("textarea", { class:cls || "" }) : h("input", { class:cls || "" }); i.value = el[k] || "";
+    i.onchange = () => set(k, i.value); return h("div", null, h("label", { text:label }), i);
+  };
+  const sel = (k, label, opts) => {
+    const s = h("select", null, opts.map(o => h("option", { value:o[0], text:o[1] }))); s.value = el[k]; s.onchange = () => set(k, s.value);
+    return h("div", null, h("label", { text:label }), s);
+  };
+  const col = (k, label) => { const i = h("input", { type:"color", value:el[k] }); i.onchange = () => set(k, i.value); return h("div", null, h("label", { text:label }), i); };
+  const chk = (k, label) => { const i = h("input", { type:"checkbox" }); i.checked = !!el[k]; i.onchange = () => set(k, i.checked); return h("label", { style:"display:flex;gap:8px;align-items:center" }, i, label); };
+
+  fs.append(txt("name", "اسم الطبقة"));
+  fs.append(h("div", { class:"grid2" }, num("x", "X (ملم)"), num("y", "Y (ملم)"), num("w", "العرض (ملم)"), num("h", "الارتفاع (ملم)"), num("rot", "الدوران (درجة)", 1), num("opacity", "الشفافية (0-1)", 0.1, 0, 1)));
+  if(el.type === "text") fs.append(txt("text", "النص", true));
+  if(el.type === "field"){
+    fs.append(sel("field", "يعرض الحقل", FIELDS), txt("prefix", "نص قبل القيمة (مثل: ID: )", false, "ltr"));
+  }
+  if(el.type === "text" || el.type === "field"){
+    fs.append(sel("font", "نوع الخط", FONTS.map(f => [f, f])),
+      h("div", { class:"grid2" }, num("size", "حجم الخط (pt)", 0.5, 3, 60), col("color", "اللون")),
+      h("div", { class:"grid2" }, sel("align", "المحاذاة", [["right", "يمين"], ["center", "وسط"], ["left", "يسار"]]), sel("dir", "الاتجاه", [["rtl", "RTL عربي"], ["ltr", "LTR إنجليزي"]])),
+      chk("bold", "خط عريض"));
+  }
+  if(el.type === "field"){
+    fs.append(chk("shrink", "تصغير الخط تلقائياً إذا كان النص طويلاً"), h("div", { class:"grid2" }, num("min_pct", "أقل حجم (%)", 5, 20, 100), num("max_chars", "أقصى عدد حروف", 1, 5, 200)));
+  }
+  if(el.type === "photo") fs.append(h("div", { class:"grid2" }, num("radius", "استدارة الزوايا (ملم)", 0.5, 0, 30), num("border_w", "سمك الإطار (ملم)", 0.1, 0, 5)), col("border_color", "لون الإطار"), num("focus", "تركيز القص عمودياً (%)", 5, 0, 100));
+  if(el.type === "image"){
+    fs.append(sel("fit", "ملاءمة الصورة", [["contain", "احتواء"], ["stretch", "تمديد"]]),
+      h("button", { class:"btn sec", style:"margin-top:8px", text:"رفع / تغيير الصورة", onclick:() => pickFile(async (f) => { el.asset = await uploadAsset(f); commit({ props:true }); }) }));
+  }
+  // محاذاة نسبة للبطاقة
+  const al = (t, fn) => h("button", { class:"btn sm sec", text:t, onclick:() => { fn(); commit({ props:true }); } });
+  fs.append(h("label", { text:"محاذاة بالنسبة للبطاقة" }), h("div", { class:"row" },
+    al("يسار", () => el.x = 0), al("وسط أفقي", () => el.x = rnd((S.width_mm - el.w) / 2)), al("يمين", () => el.x = rnd(S.width_mm - el.w)),
+    al("أعلى", () => el.y = 0), al("وسط عمودي", () => el.y = rnd((S.height_mm - el.h) / 2)), al("أسفل", () => el.y = rnd(S.height_mm - el.h))));
+  box.append(fs);
+}
+
+/* ---------- إعدادات البطاقة ---------- */
+function renderCard(){
+  const box = $("p-card"); box.replaceChildren();
+  const fs = h("fieldset", { style:"border:0;padding:0;margin:0", disabled: RO ? "disabled" : null });
+  const num = (k, label, step, min, max) => {
+    const i = h("input", { type:"number", step:step || 0.1, class:"ltr", value:S[k], min, max });
+    i.onchange = () => { const v = parseFloat(i.value); if(!isFinite(v) || v < min || v > max){ i.value = S[k]; toast("القيمة خارج المدى المسموح", true); return; } S[k] = v; commit({}); };
+    return h("div", null, h("label", { text:label }), i);
+  };
+  fs.append(h("div", { class:"row" },
+    h("button", { class:"btn sm sec", text:"CR80 عمودي 54×85.6", onclick:() => { S.width_mm = 54; S.height_mm = 85.6; commit({ card:true }); } }),
+    h("button", { class:"btn sm sec", text:"CR80 أفقي 85.6×54", onclick:() => { S.width_mm = 85.6; S.height_mm = 54; commit({ card:true }); } })));
+  fs.append(h("div", { class:"grid2" }, num("width_mm", "العرض (ملم)", 0.1, 20, 200), num("height_mm", "الارتفاع (ملم)", 0.1, 20, 300),
+    num("dpi", "الدقة (DPI)", 1, 72, 1200), num("safe_mm", "الهامش الآمن (ملم)", 0.5, 0, 15), num("bleed_mm", "منطقة القص Bleed (ملم)", 0.5, 0, 10)));
+  const g = h("input", { type:"checkbox" }); g.checked = guides; g.onchange = () => { guides = g.checked; renderCanvas(); };
+  fs.append(h("label", { style:"display:flex;gap:8px;align-items:center;margin-top:10px" }, g, "إظهار خط الهامش الآمن (برتقالي)"));
+  fs.append(h("p", { class:"muted", text:"الخلفيات المرفوعة تُمدَّد لتطابق قياس البطاقة. اجعل تصميم Canva بنفس النسبة." }));
+  box.append(fs);
+}
+
+/* ---------- القوالب: قائمة وفتح وحفظ ---------- */
+function renderAll(){
+  renderHead(); renderAdd(); renderCanvas(); renderLayers(); renderProps(); renderCard(); updateButtons();
+}
+function renderHead(){
+  $("t-name").textContent = T.name;
+  const v = $("t-ver"); v.textContent = "نسخة " + V.version_no + (V.is_approved ? " · معتمدة" : " · مسودة"); v.className = "chip " + (V.is_approved ? "ok" : "warn");
+  $("t-def").classList.toggle("hidden", !T.is_default);
+  const vs = $("vsel"); vs.replaceChildren();
+  VS.forEach(x => vs.append(h("option", { value:x.id, text:"نسخة " + x.version_no + (x.is_approved ? " (معتمدة)" : " (مسودة)"), selected: x.id === V.id ? "selected" : null })));
+  $("ro-banner").classList.toggle("hidden", !RO);
+}
+function updateButtons(){
+  $("b-save").classList.toggle("hidden", RO); $("b-approve").classList.toggle("hidden", RO);
+  $("b-new").classList.toggle("hidden", !RO);
+  $("b-default").classList.toggle("hidden", !(RO && !T.is_default));
+}
+async function openList(){
+  if(dirty && !confirm("لديك تعديلات غير محفوظة. الخروج بدون حفظ؟")) return;
+  dirty = false; $("editor").classList.add("hidden"); $("list").classList.remove("hidden");
+  const box = $("tpls"); box.replaceChildren(h("p", { class:"muted", text:"جاري التحميل..." }));
+  try{
+    const j = await api("templates.list"); box.replaceChildren();
+    if(!j.templates.length) box.append(h("div", { class:"card muted", text:"لا توجد قوالب بعد. أنشئ أول قالب من الأعلى." }));
+    j.templates.forEach(t => {
+      const last = t.versions[t.versions.length - 1];
+      box.append(h("div", { class:"item" }, h("div", { class:"row" },
+        h("b", { text:t.name }), t.is_default ? h("span", { class:"chip ok", text:"افتراضي" }) : null,
+        last ? h("span", { class:"chip " + (last.is_approved ? "ok" : "warn"), text:"آخر نسخة " + last.version_no + (last.is_approved ? " معتمدة" : " مسودة") }) : null,
+        h("span", { style:"flex:1" }), h("button", { class:"btn sm", text:"فتح", onclick:() => openTemplate(t.id) }))));
+    });
+  }catch(e){ box.replaceChildren(h("div", { class:"card", text:e.message })); }
+}
+async function openTemplate(tid, vid){
+  if(dirty && !confirm("لديك تعديلات غير محفوظة. متابعة بدون حفظ؟")) { renderHead(); return; }
+  try{
+    const j = await api("template.get", { template_id:tid, version_id:vid });
+    T = j.template; VS = j.versions; V = j.version;
+    const fd = V.front_design || {}, bd = V.back_design || {}, st = fd.settings || {};
+    D = { front:fd.elements || [], back:bd.elements || [] };
+    S = { width_mm:Number(V.width_mm), height_mm:Number(V.height_mm), dpi:Number(V.dpi), bleed_mm:Number(st.bleed_mm || 0), safe_mm:st.safe_mm == null ? 3 : Number(st.safe_mm) };
+    RO = !!V.is_approved; side = "front"; selId = null; hist = []; hi = -1; dirty = false; preview = false;
+    $("list").classList.add("hidden"); $("editor").classList.remove("hidden");
+    $("s-front").className = "btn sm"; $("s-back").className = "btn sm sec";
+    fitZoom(); renderAll();
+    await loadAssets(); renderCanvas(); pushHist(); dirty = false;
+  }catch(e){ toast(e.message, true); }
+}
+async function save(){
+  if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+  await new Promise(r => setTimeout(r, 60));
+  await api("template.save", { version_id:V.id, width_mm:S.width_mm, height_mm:S.height_mm, dpi:S.dpi,
+    front_design:{ elements:D.front, settings:{ bleed_mm:S.bleed_mm, safe_mm:S.safe_mm } }, back_design:{ elements:D.back } });
+  dirty = false;
+}
+$("b-save").onclick = async () => { try{ await save(); toast("تم حفظ المسودة"); }catch(e){ toast(e.message, true); } };
+$("b-approve").onclick = async () => {
+  if(!confirm("اعتماد هذه النسخة؟ بعد الاعتماد لا يمكن تعديلها (تنشئ نسخة جديدة للتعديل).")) return;
+  try{ await save(); await api("template.approve", { version_id:V.id }); toast("تم اعتماد القالب"); dirty = false; await openTemplate(T.id, V.id); }
+  catch(e){ toast(e.message, true); }
+};
+$("b-new").onclick = async () => { try{ const j = await api("template.newversion", { template_id:T.id }); await openTemplate(T.id, j.version_id); }catch(e){ toast(e.message, true); } };
+$("b-default").onclick = async () => { try{ await api("template.setdefault", { template_id:T.id }); toast("تم تعيينه كقالب افتراضي"); await openTemplate(T.id, V.id); }catch(e){ toast(e.message, true); } };
+$("b-back").onclick = openList;
+$("vsel").onchange = () => openTemplate(T.id, $("vsel").value);
+$("newbtn").onclick = async () => {
+  const name = $("newname").value.trim();
+  try{ const j = await api("templates.create", { name }); $("newname").value = ""; await openTemplate(j.template_id, j.version_id); }catch(e){ toast(e.message, true); }
+};
+window.addEventListener("beforeunload", (e) => { if(dirty){ e.preventDefault(); e.returnValue = ""; } });
+window.addEventListener("resize", () => { if(stage && !$("editor").classList.contains("hidden")){ renderCanvas(); } });
+
+/* ---------- التشغيل ---------- */
+(async function boot(){
+  try{
+    const loads = [];
+    FONTS.forEach(f => ["400", "700"].forEach(w => loads.push(document.fonts.load(w + ' 16px "' + f + '"', "أبجد ABC"))));
+    await Promise.race([Promise.all(loads), new Promise(r => setTimeout(r, 4000))]);
+  }catch(e){}
+  openList();
+  document.fonts && document.fonts.ready.then(() => { if(stage && T) renderCanvas(); });
+})();
+</script>
+</body>
+</html>
