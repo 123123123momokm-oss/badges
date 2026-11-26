@@ -311,8 +311,11 @@ function pushHist(){
   hist = hist.slice(0, hi + 1); hist.push(s); if(hist.length > 60) hist.shift(); hi = hist.length - 1;
 }
 function restore(s){ const o = JSON.parse(s); D = o.D; S = o.S; if(selId && !find(selId)) selId = null; dirty = true; renderAll(); }
+function syncBg(){
+  ["front", "back"].forEach(k => D[k].forEach(e => { if(e.role === "bg"){ e.x = 0; e.y = 0; e.w = S.width_mm; e.h = S.height_mm; } }));
+}
 function commit(o){
-  o = o || {}; if(RO) return; dirty = true; pushHist(); renderCanvas(); renderLayers();
+  o = o || {}; if(RO) return; syncBg(); dirty = true; pushHist(); renderCanvas(); renderLayers();
   if(o.props) renderProps(); if(o.card) renderCard();
 }
 $("u-undo").onclick = () => { if(hi > 0){ hi--; restore(hist[hi]); } };
@@ -548,6 +551,10 @@ async function openTemplate(tid, vid){
     D = { front:fd.elements || [], back:bd.elements || [] };
     S = { width_mm:Number(V.width_mm), height_mm:Number(V.height_mm), dpi:Number(V.dpi), bleed_mm:Number(st.bleed_mm || 0), safe_mm:st.safe_mm == null ? 3 : Number(st.safe_mm) };
     RO = !!V.is_approved; side = "front"; selId = null; hist = []; hi = -1; dirty = false; preview = false;
+    if(!RO){
+      if(!D.front.length && !D.back.length && Math.abs(S.width_mm - 85.6) < 0.01 && Math.abs(S.height_mm - 54) < 0.01){ S.width_mm = 54; S.height_mm = 85.6; }
+      syncBg();
+    }
     $("list").classList.add("hidden"); $("editor").classList.remove("hidden");
     $("s-front").className = "btn sm"; $("s-back").className = "btn sm sec";
     fitZoom(); renderAll();
