@@ -7,7 +7,12 @@
 <title>لوحة الإدارة – منظومة الباجات</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&family=Noto+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/konva/9.3.6/konva.min.js"></script>
+<script>window.Konva||document.write('<script src="https://cdn.jsdelivr.net/npm/konva@9.3.6/konva.min.js"><\/script>')</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>window.qrcode||document.write('<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"><\/script>')</script>
+<script src="render.js"></script>
 <style>
 :root{--p:#0b6e8a;--pd:#084f63;--bg:#f3f6f8;--card:#fff;--tx:#17262e;--mu:#62757f;--bd:#d5dfe4;--err:#c0392b;--ok:#1e8449;--warn:#b9770e}
 *{box-sizing:border-box}
@@ -70,6 +75,8 @@ textarea{min-height:80px}
 .tl div{margin:6px 0;font-size:14px}
 .pager{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:10px 0}
 .ck{display:grid;grid-template-columns:1fr 150px;gap:8px;align-items:center;margin:6px 0}
+.pv{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.pv .side{direction:ltr;box-shadow:0 2px 10px rgba(0,0,0,.3);line-height:0}
 </style>
 </head>
 <body>
@@ -173,7 +180,7 @@ async function renderLogin(){
 function tabsFor(){
   const r = ME.role, t = [];
   if(["SUPER_ADMIN","ASSISTANT_ADMIN","APPROVER","VERIFIER"].includes(r)){
-    t.push(["dash","لوحة المعلومات"], ["reqs", r === "VERIFIER" ? "التدقيق" : "الطلبات"]);
+    t.push(["dash","لوحة المعلومات"], ["reqs", r === "VERIFIER" ? "التدقيق" : (r === "APPROVER" ? "الموافقة" : "الطلبات")]);
   }
   if(["SUPER_ADMIN","ASSISTANT_ADMIN"].includes(r)) t.push(["studio","استوديو التصميم"], ["users","الحسابات"]);
   if(r === "PRINTER") t.push(["print","الطباعة"]);
@@ -234,7 +241,7 @@ async function renderDash(m){
 const F = { q:"", status:"", department_id:"", sort:"new", offset:0 };
 const PAGE = 20;
 function renderReqs(m){
-  if(ME.role === "VERIFIER" && !renderReqs.init){ F.status = "UNDER_REVIEW"; renderReqs.init = true; }
+  if(!renderReqs.init){ if(ME.role === "VERIFIER") F.status = "UNDER_REVIEW"; if(ME.role === "APPROVER") F.status = "PENDING_APPROVAL"; renderReqs.init = true; }
   const q = h("input", { placeholder:"بحث بالاسم، الرقم الوظيفي، رقم الطلب، رقم الباج، الهاتف", value:F.q });
   let to; q.oninput = () => { clearTimeout(to); to = setTimeout(() => { F.q = q.value.trim(); F.offset = 0; load(); }, 450); };
   const st = h("select", null, h("option", { value:"", text:"كل الحالات" }),
@@ -306,7 +313,9 @@ async function openRequest(id){
     h("h3", { text:"الاستمارة الورقية (اضغط للتكبير)" }), h("div", { class:"thumbs" }, forms.map(x => thumb(x, "صفحة "+x.page_no))));
   m.replaceChildren(back, h("div", { style:"height:10px" }), info, docs);
 
+  if(d.preview) m.append(previewCard(d));
   if(ME.role === "VERIFIER" && r.status === "UNDER_REVIEW") m.append(reviewForm(r.id));
+  if(ME.role === "APPROVER" && r.status === "PENDING_APPROVAL") m.append(approvalForm(r.id));
 
   if(d.reviews.length) m.append(h("div", { class:"card" }, h("h2", { text:"سجل التدقيق" }), d.reviews.map(v =>
     h("div", { class:"kv" }, h("span", { text:(v.reviewer && v.reviewer.full_name || "—")+" · "+fmt(v.reviewed_at) }),
@@ -339,6 +348,60 @@ function reviewForm(id){
   }
   ok.onclick = () => send("VERIFIED"); ret.onclick = () => send("RETURNED");
   return h("div", { class:"card" }, h("h2", { text:"قائمة التدقيق" }), rows, h("label", { text:"ملاحظات / سبب الإرجاع" }), notes, ok, ret);
+}
+
+/* ---------- معاينة الباج والموافقة النهائية ---------- */
+const dmy = (s) => { if(!s) return ""; const p = String(s).slice(0, 10).split("-"); return p[2] + "/" + p[1] + "/" + p[0]; };
+const isoDay = (x) => x.toISOString().slice(0, 10);
+async function drawPreview(d, box){
+  const p = d.preview;
+  try{ await Promise.all(["Cairo","Tajawal","Noto Sans Arabic"].flatMap(f => ["400","700"].map(w => document.fonts.load(w + ' 16px "' + f + '"', "أبجد ABC")))); }catch(e){}
+  const imgs = {};
+  await Promise.all(Object.keys(p.urls || {}).map(async (k) => { imgs[k] = await BadgeRender.loadImage(p.urls[k]); }));
+  const pd = d.documents.find(x => x.kind === "PHOTO_PROCESSED" && x.url) || d.documents.find(x => x.kind === "PHOTO_ORIGINAL" && x.url);
+  const photo = pd ? await BadgeRender.loadImage(pd.url) : null;
+  const e = (p.source === "issued" && p.employee) ? p.employee : {
+    name_ar:d.employee.name_ar, name_en:d.employee.name_en, job_title_ar:d.employee.job_title_ar,
+    job_title_en:d.employee.job_title_en, department:d.request.department, job_number:d.employee.job_number };
+  const today = new Date(), end = new Date(); end.setFullYear(end.getFullYear() + 2);
+  const data = Object.assign({}, e, {
+    serial: d.badge ? d.badge.serial_no : "—",
+    issue_date: d.badge ? dmy(d.badge.issued_at) : dmy(isoDay(today)),
+    expiry_date: d.badge ? dmy(d.badge.valid_to) : dmy(isoDay(end)),
+    verify_url: "https://example.org/verify/preview", photo });
+  box.replaceChildren();
+  const ppm = 12, scale = Math.min(1, 230 / (p.width_mm * ppm));
+  ["front", "back"].forEach((k) => {
+    const holder = h("div", { class:"side" }); box.append(holder);
+    BadgeRender.draw({ container:holder, elements:p[k], widthMm:p.width_mm, heightMm:p.height_mm, ppm, scale, data, imgs });
+  });
+}
+function previewCard(d){
+  const box = h("div", { class:"pv" }, h("p", { class:"muted", text:"جاري تحضير المعاينة..." }));
+  drawPreview(d, box).catch(() => box.replaceChildren(h("p", { class:"muted", text:"تعذر رسم المعاينة." })));
+  return h("div", { class:"card" }, h("h2", { text:"معاينة الباج (الوجهان)" }), box,
+    h("p", { class:"muted", text: d.preview.source === "issued"
+      ? "التصميم المعتمد عند الإصدار."
+      : "معاينة بالقالب الافتراضي الحالي. رقم الباج وتاريخ الإصدار والانتهاء النهائية تُحدَّد عند الموافقة." }));
+}
+function approvalForm(id){
+  const reason = h("textarea", { placeholder:"سبب الرفض أو الإرجاع (مطلوب عند الرفض أو الإرجاع)" });
+  const ok = h("button", { class:"btn green block", style:"margin-top:12px", text:"الموافقة النهائية وإصدار الباج" });
+  const rej = h("button", { class:"btn red block", style:"margin-top:8px", text:"رفض الطلب" });
+  const ret = h("button", { class:"btn sec block", style:"margin-top:8px", text:"إعادة للموظف للتعديل" });
+  async function send(decision){
+    if(decision !== "APPROVED" && reason.value.trim().length < 5){ toast("اكتب سبب القرار", true); return; }
+    const msg = { APPROVED:"تأكيد الموافقة النهائية؟ سيُخصَّص رقم الباج وتبدأ مدة الصلاحية (سنتان) من اليوم.", REJECTED:"رفض هذا الطلب؟", RETURNED:"إعادة الطلب للموظف للتعديل؟" }[decision];
+    if(!confirm(msg)) return;
+    ok.disabled = rej.disabled = ret.disabled = true;
+    try{
+      const j = await api("approval.decide", { request_id:id, decision, reason:reason.value });
+      toast(decision === "APPROVED" ? "تم إصدار الباج رقم " + j.serial : "تم تسجيل قرارك");
+      const m = document.getElementById("main"); m.replaceChildren(); renderReqs(m);
+    }catch(e){ toast(e.message, true); ok.disabled = rej.disabled = ret.disabled = false; }
+  }
+  ok.onclick = () => send("APPROVED"); rej.onclick = () => send("REJECTED"); ret.onclick = () => send("RETURNED");
+  return h("div", { class:"card" }, h("h2", { text:"قرار المدير" }), h("label", { text:"ملاحظات / سبب القرار" }), reason, ok, rej, ret);
 }
 
 /* ---------- الحسابات ---------- */
