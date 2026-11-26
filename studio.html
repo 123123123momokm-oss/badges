@@ -82,6 +82,8 @@ textarea{min-height:60px}
       <button class="btn sm" id="b-save">حفظ</button>
       <button class="btn sm green" id="b-approve">حفظ واعتماد القالب</button>
       <button class="btn sm" id="b-new">نسخة جديدة</button>
+      <button class="btn sm red" id="b-unapprove">إلغاء الاعتماد</button>
+      <button class="btn sm red" id="b-delver">حذف هذه النسخة</button>
       <button class="btn sm" id="b-default">تعيين افتراضي</button>
       <button class="btn sm" id="b-back">القوالب</button>
     </div>
@@ -163,7 +165,7 @@ const rnd = (n) => Math.round(n * 100) / 100;
 const fieldLabel = (k) => (FIELDS.find(f => f[0] === k) || [k, k])[1];
 
 /* ---------- الحالة ---------- */
-let T = null, V = null, VS = [];
+let T = null, V = null, VS = [], USED = [], ME = null;
 let D = { front:[], back:[] };
 let S = { width_mm:54, height_mm:85.6, dpi:300, bleed_mm:0, safe_mm:3 };
 let side = "front", selId = null, RO = false, dirty = false, preview = false, guides = true, zoom = 1, tab = "add";
@@ -519,12 +521,19 @@ function renderHead(){
   $("t-def").classList.toggle("hidden", !T.is_default);
   const vs = $("vsel"); vs.replaceChildren();
   VS.forEach(x => vs.append(h("option", { value:x.id, text:"نسخة " + x.version_no + (x.is_approved ? " (معتمدة)" : " (مسودة)"), selected: x.id === V.id ? "selected" : null })));
+  const used = USED.indexOf(V.id) >= 0;
+  $("ro-banner").textContent = used
+    ? "هذه النسخة معتمدة وصدرت بها باجات، فلا يمكن تعديلها أو إلغاء اعتمادها أو حذفها. اضغط «نسخة جديدة» لعمل تصميم جديد."
+    : "هذه النسخة معتمدة ولا يمكن تعديلها. اضغط «نسخة جديدة» للتعديل، أو «إلغاء الاعتماد» لتعود مسودة. والباجات القديمة تبقى كما صدرت.";
   $("ro-banner").classList.toggle("hidden", !RO);
 }
 function updateButtons(){
-  $("b-save").classList.toggle("hidden", RO); $("b-approve").classList.toggle("hidden", RO);
+  const sup = !!ME && ME.role === "SUPER_ADMIN", used = USED.indexOf(V.id) >= 0;
+  $("b-save").classList.toggle("hidden", RO); $("b-approve").classList.toggle("hidden", RO || !sup);
   $("b-new").classList.toggle("hidden", !RO);
-  $("b-default").classList.toggle("hidden", !(RO && !T.is_default));
+  $("b-default").classList.toggle("hidden", !(RO && !T.is_default && sup));
+  $("b-unapprove").classList.toggle("hidden", !(RO && sup && !used));
+  $("b-delver").classList.toggle("hidden", !(!RO && sup));
 }
 async function openList(){
   if(dirty && !confirm("لديك تعديلات غير محفوظة. الخروج بدون حفظ؟")) return;
@@ -538,7 +547,11 @@ async function openList(){
       box.append(h("div", { class:"item" }, h("div", { class:"row" },
         h("b", { text:t.name }), t.is_default ? h("span", { class:"chip ok", text:"افتراضي" }) : null,
         last ? h("span", { class:"chip " + (last.is_approved ? "ok" : "warn"), text:"آخر نسخة " + last.version_no + (last.is_approved ? " معتمدة" : " مسودة") }) : null,
-        h("span", { style:"flex:1" }), h("button", { class:"btn sm", text:"فتح", onclick:() => openTemplate(t.id) }))));
+        h("span", { style:"flex:1" }), h("button", { class:"btn sm", text:"فتح", onclick:() => openTemplate(t.id) }),
+        (ME && ME.role === "SUPER_ADMIN") ? h("button", { class:"btn sm red", text:"حذف", onclick:async () => {
+          if(!confirm("حذف القالب «" + t.name + "» بكل نسخه نهائياً؟")) return;
+          try{ await api("template.delete", { template_id:t.id }); toast("تم حذف القالب"); openList(); }catch(e){ toast(e.message, true); }
+        } }) : null)));
     });
   }catch(e){ box.replaceChildren(h("div", { class:"card", text:e.message })); }
 }
@@ -546,7 +559,7 @@ async function openTemplate(tid, vid){
   if(dirty && !confirm("لديك تعديلات غير محفوظة. متابعة بدون حفظ؟")) { renderHead(); return; }
   try{
     const j = await api("template.get", { template_id:tid, version_id:vid });
-    T = j.template; VS = j.versions; V = j.version;
+    T = j.template; VS = j.versions; V = j.version; USED = j.used || [];
     const fd = V.front_design || {}, bd = V.back_design || {}, st = fd.settings || {};
     D = { front:fd.elements || [], back:bd.elements || [] };
     S = { width_mm:Number(V.width_mm), height_mm:Number(V.height_mm), dpi:Number(V.dpi), bleed_mm:Number(st.bleed_mm || 0), safe_mm:st.safe_mm == null ? 3 : Number(st.safe_mm) };
@@ -576,6 +589,19 @@ $("b-approve").onclick = async () => {
 };
 $("b-new").onclick = async () => { try{ const j = await api("template.newversion", { template_id:T.id }); await openTemplate(T.id, j.version_id); }catch(e){ toast(e.message, true); } };
 $("b-default").onclick = async () => { try{ await api("template.setdefault", { template_id:T.id }); toast("تم تعيينه كقالب افتراضي"); await openTemplate(T.id, V.id); }catch(e){ toast(e.message, true); } };
+$("b-unapprove").onclick = async () => {
+  if(!confirm("إلغاء اعتماد هذه النسخة؟ ستعود مسودة قابلة للتعديل. إذا كانت القالب الافتراضي الوحيد المعتمد فلن يبقى له قالب افتراضي.")) return;
+  try{ await api("template.unapprove", { version_id:V.id }); toast("تم إلغاء الاعتماد، النسخة الآن مسودة"); dirty = false; await openTemplate(T.id, V.id); }
+  catch(e){ toast(e.message, true); }
+};
+$("b-delver").onclick = async () => {
+  const only = VS.length === 1;
+  if(!confirm(only ? "هذه آخر نسخة بالقالب، فحذفها يحذف القالب كاملاً. متابعة؟" : "حذف هذه النسخة (المسودة) نهائياً؟")) return;
+  try{
+    const j = await api("template.delete_version", { version_id:V.id }); dirty = false; toast("تم الحذف");
+    if(j.template_deleted) openList(); else await openTemplate(T.id);
+  }catch(e){ toast(e.message, true); }
+};
 $("b-back").onclick = openList;
 $("vsel").onchange = () => openTemplate(T.id, $("vsel").value);
 $("newbtn").onclick = async () => {
@@ -592,6 +618,7 @@ window.addEventListener("resize", () => { if(stage && !$("editor").classList.con
     FONTS.forEach(f => ["400", "700"].forEach(w => loads.push(document.fonts.load(w + ' 16px "' + f + '"', "أبجد ABC"))));
     await Promise.race([Promise.all(loads), new Promise(r => setTimeout(r, 4000))]);
   }catch(e){}
+  try{ ME = (await api("me")).user; }catch(e){}
   openList();
   document.fonts && document.fonts.ready.then(() => { if(stage && T) renderCanvas(); });
 })();
