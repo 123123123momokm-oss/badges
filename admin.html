@@ -193,7 +193,7 @@ async function renderShell(){
   const bar = h("div", { class:"tabs" });
   tabs.forEach(([k, label]) => {
     const b = h("button", { class:"tab"+(k === TAB ? " on" : ""), text:label });
-    b.onclick = () => { if(k === "studio"){ location.href = "studio.html"; return; } TAB = k; [...bar.children].forEach(c => c.classList.toggle("on", c === b)); openTab(); };
+    b.onclick = () => { if(k === "studio" || k === "print"){ location.href = k + ".html"; return; } TAB = k; [...bar.children].forEach(c => c.classList.toggle("on", c === b)); openTab(); };
     bar.append(b);
   });
   const out = h("button", { text:"خروج" });
@@ -316,6 +316,7 @@ async function openRequest(id){
   if(d.preview) m.append(previewCard(d));
   if(ME.role === "VERIFIER" && r.status === "UNDER_REVIEW") m.append(reviewForm(r.id));
   if(ME.role === "APPROVER" && r.status === "PENDING_APPROVAL") m.append(approvalForm(r.id));
+  if(d.badge && ["SUPER_ADMIN", "APPROVER"].includes(ME.role) && ["PRINTED", "DELIVERED"].includes(r.status)) m.append(reprintForm(d.badge.id));
 
   if(d.reviews.length) m.append(h("div", { class:"card" }, h("h2", { text:"سجل التدقيق" }), d.reviews.map(v =>
     h("div", { class:"kv" }, h("span", { text:(v.reviewer && v.reviewer.full_name || "—")+" · "+fmt(v.reviewed_at) }),
@@ -402,6 +403,20 @@ function approvalForm(id){
   }
   ok.onclick = () => send("APPROVED"); rej.onclick = () => send("REJECTED"); ret.onclick = () => send("RETURNED");
   return h("div", { class:"card" }, h("h2", { text:"قرار المدير" }), h("label", { text:"ملاحظات / سبب القرار" }), reason, ok, rej, ret);
+}
+
+function reprintForm(badgeId){
+  const reason = h("textarea", { placeholder:"سبب إعادة الطباعة (باج تالف أو مفقود...)" });
+  const btn = h("button", { class:"btn block", style:"margin-top:10px", text:"السماح بإعادة الطباعة" });
+  btn.onclick = async () => {
+    if(reason.value.trim().length < 5){ toast("اكتب السبب", true); return; }
+    if(!confirm("السماح لموظف الطباعة بإعادة طباعة هذا الباج مرة واحدة؟")) return;
+    btn.disabled = true;
+    try{ await api("print.authorize_reprint", { badge_id:badgeId, reason:reason.value }); toast("تم التصريح بإعادة الطباعة"); reason.value = ""; }
+    catch(e){ toast(e.message, true); }
+    btn.disabled = false;
+  };
+  return h("div", { class:"card" }, h("h2", { text:"إعادة طباعة الباج" }), h("p", { class:"muted", text:"يستخدم عند تلف الباج أو فقدانه. التصريح يُستعمل مرة واحدة ويظهر لموظف الطباعة." }), reason, btn);
 }
 
 /* ---------- الحسابات ---------- */
