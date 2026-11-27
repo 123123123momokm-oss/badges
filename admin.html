@@ -187,6 +187,7 @@ function tabsFor(){
   return t;
 }
 async function renderShell(){
+  if(ME.role === "PRINTER"){ location.replace("print.html"); return; }
   try{ if(!DEPTS.length && ME.role !== "PRINTER") DEPTS = (await api("departments")).departments; }catch(e){ if(!SESS) return; }
   const tabs = tabsFor(); TAB = tabs[0][0];
   const main = h("div", { class:"wrap", id:"main" });
