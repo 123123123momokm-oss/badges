@@ -72,6 +72,7 @@ input.bad,select.bad{border-color:var(--err)}
     <div class="bar"><i id="bar"></i></div>
   </div>
 
+  <div id="edit-banner" class="msg err hidden" style="margin:0 0 12px"></div>
   <div class="card" id="s1">
     <h2>المعلومات الشخصية</h2>
     <label>الاسم الكامل بالعربية <span class="req">*</span></label>
@@ -101,6 +102,7 @@ input.bad,select.bad{border-color:var(--err)}
   <div class="card hidden" id="s2">
     <h2>الصورة الشخصية</h2>
     <p class="muted">صورة واضحة للوجه، بخلفية فاتحة وبدون فلاتر.</p>
+    <p class="muted hidden" id="photo-hint" style="color:var(--ok)">صورتك الحالية محفوظة. ارفع صورة جديدة فقط إذا طُلب منك تغييرها، وإلا اضغط «التالي».</p>
     <div class="row">
       <button class="btn" id="photo-cam" style="margin-top:0">التقاط صورة</button>
       <button class="btn sec" id="photo-gal" style="margin-top:0">من الجهاز</button>
@@ -115,6 +117,7 @@ input.bad,select.bad{border-color:var(--err)}
   <div class="card hidden" id="s3">
     <h2>استمارة تأييد المعلومات الوظيفية</h2>
     <p class="muted">صوّر الاستمارة الورقية بعد ملئها وتوقيعها من مسؤول القسم. يمكنك إضافة أكثر من صفحة (حتى 5).</p>
+    <p class="muted hidden" id="form-hint" style="color:var(--ok)">استمارتك الحالية محفوظة. صوّر الاستمارة من جديد فقط إذا طُلب منك ذلك، وإلا اضغط «التالي». عند رفع صفحات جديدة تحل محل القديمة.</p>
     <div class="row">
       <button class="btn" id="form-cam" style="margin-top:0">تصوير صفحة</button>
       <button class="btn sec" id="form-gal" style="margin-top:0">من الجهاز</button>
@@ -139,8 +142,8 @@ input.bad,select.bad{border-color:var(--err)}
 
 <!-- النجاح -->
 <section id="v-done" class="card center hidden">
-  <h2 style="color:var(--ok)">تم تسجيل بياناتك بنجاح</h2>
-  <p>تم تسجيل بياناتك بنجاح في منظومة الباجات الإلكترونية لمستشفى الإمام الحسن المجتبى (عليه السلام).</p>
+  <h2 id="done-title" style="color:var(--ok)">تم تسجيل بياناتك بنجاح</h2>
+  <p id="done-msg">تم تسجيل بياناتك بنجاح في منظومة الباجات الإلكترونية لمستشفى الإمام الحسن المجتبى (عليه السلام).</p>
   <div class="muted">رقم طلبك</div>
   <div class="reqno" id="done-no"></div>
   <button class="btn sec" id="copy-no">نسخ رقم الطلب</button>
@@ -174,6 +177,7 @@ const STATUS_AR = {
   EXPIRED:"منتهي الصلاحية", REVOKED:"ملغى"
 };
 const st = { step:1, depts:[], photo:null, forms:[], key:null, sending:false };
+let editCtx = null;   // { no, id } while fixing a returned request
 
 const toEn = (s) => String(s||"").replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d));
 const val = (id) => toEn($(id).value.trim());
@@ -230,6 +234,7 @@ function deptLabel(){
 
 /* ---------- مسودة محلية للنصوص ---------- */
 function saveDraft(){
+  if(editCtx) return;
   try{
     const o = {}; TEXT_FIELDS.forEach(f => o[f] = $(f).value);
     o.dept = $("dept").value; o.sub = $("sub").value;
@@ -329,6 +334,11 @@ function renderReview(){
     const im = document.createElement("img"); im.src = f.url; d.append(im); t.append(d);
   });
   box.append(t);
+  if(editCtx){
+    const note = document.createElement("p"); note.className = "muted";
+    note.textContent = (st.photo ? "الصورة الشخصية: صورة جديدة. " : "الصورة الشخصية: بدون تغيير. ") + (st.forms.length ? "الاستمارة: صفحات جديدة." : "الاستمارة: بدون تغيير.");
+    box.append(note);
+  }
 }
 async function submit(){
   if(st.sending) return;
@@ -341,15 +351,21 @@ async function submit(){
   fd.append("department_id", deptId());
   fd.append("job_number", val("job_number")); fd.append("phone", val("phone").replace(/[\s-]/g,""));
   fd.append("email", val("email"));
-  fd.append("photo", st.photo.blob, "photo.jpg");
+  if(st.photo) fd.append("photo", st.photo.blob, "photo.jpg");
   st.forms.forEach((f,i) => fd.append("form", f.blob, "form"+(i+1)+".jpg"));
+  if(editCtx){ fd.append("mode", "resubmit"); fd.append("request_no", editCtx.no); fd.append("id", editCtx.id); }
   const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 90000);
   try{
     const r = await fetch(API, { method:"POST", body:fd, signal:ctl.signal });
     const j = await r.json().catch(() => ({}));
     if(!r.ok || !j.request_no) throw new Error(j.error || "حدث خطأ. أعد المحاولة.");
     st.key = null;
-    try{ localStorage.removeItem("badge_draft"); localStorage.setItem("last_request_no", j.request_no); }catch(e){}
+    const wasEdit = !!editCtx;
+    try{ if(!wasEdit) localStorage.removeItem("badge_draft"); localStorage.setItem("last_request_no", j.request_no); }catch(e){}
+    $("done-title").textContent = wasEdit ? "تم إرسال تعديلاتك" : "تم تسجيل بياناتك بنجاح";
+    $("done-msg").textContent = wasEdit ? "تم إرسال التعديلات وأُعيد طلبك إلى التدقيق. تابع حالته برقم الطلب أدناه."
+      : "تم تسجيل بياناتك بنجاح في منظومة الباجات الإلكترونية لمستشفى الإمام الحسن المجتبى (عليه السلام).";
+    editCtx = null; clearForm();
     $("done-no").textContent = j.request_no; view("done");
   }catch(e){
     const offline = e.name === "AbortError" || e instanceof TypeError;
@@ -374,7 +390,43 @@ async function checkStatus(){
     let t = "حالة طلبك: "+(STATUS_AR[q.status] || q.status);
     if(q.return_reason) t += "\nالسبب: "+q.return_reason;
     out.style.whiteSpace = "pre-line"; out.textContent = t;
+    if(q.status === "RETURNED"){
+      const b = document.createElement("button"); b.className = "btn"; b.type = "button"; b.textContent = "تعديل الطلب وإعادة الإرسال";
+      b.onclick = () => startEdit(no, id); out.append(document.createElement("br"), b);
+    }
   }catch(e){ out.className = "msg err"; out.textContent = "تعذر الاتصال. تحقق من الإنترنت."; }
+}
+
+/* ---------- تعديل طلب معاد ---------- */
+function clearForm(){
+  TEXT_FIELDS.forEach(f => { $(f).value = ""; });
+  $("dept").value = ""; onDept();
+  if(st.photo){ URL.revokeObjectURL(st.photo.url); st.photo = null; } show("photo-prev", false);
+  st.forms.forEach(f => URL.revokeObjectURL(f.url)); st.forms = []; renderForms();
+  show("edit-banner", false); show("photo-hint", false); show("form-hint", false);
+}
+async function startEdit(no, id){
+  const out = $("st-out");
+  try{
+    const r = await fetch(API + "?action=edit_load&request_no=" + encodeURIComponent(no) + "&id=" + encodeURIComponent(id));
+    const j = await r.json().catch(() => ({}));
+    if(!r.ok) throw new Error(j.error || "تعذر تحميل بيانات الطلب");
+    if(!st.depts.length) await loadDepts();
+    clearForm(); draft = null; editCtx = { no, id };
+    const e = j.employee;
+    $("name_ar").value = e.name_ar || ""; $("name_en").value = e.name_en || "";
+    $("job_title_ar").value = e.job_title_ar || ""; $("job_title_en").value = e.job_title_en || "";
+    $("job_number").value = e.job_number || ""; $("phone").value = e.phone || ""; $("email").value = e.email || "";
+    const d = st.depts.find(x => x.id === e.department_id);
+    if(d){
+      if(d.parent_id === null){ $("dept").value = String(d.id); onDept(); }
+      else{ $("dept").value = String(d.parent_id); onDept(); $("sub").value = String(d.id); }
+    }
+    const bn = $("edit-banner");
+    bn.textContent = "طلبك " + j.request_no + " معاد للتعديل. السبب: " + (j.return_reason || "—") + ". صحّح البيانات ثم أعد الإرسال.";
+    bn.classList.remove("hidden"); show("photo-hint", true); show("form-hint", true);
+    view("form"); goStep(1);
+  }catch(err2){ out.className = "msg err"; out.classList.remove("hidden"); out.textContent = err2.message; }
 }
 
 /* ---------- ربط الأزرار ---------- */
@@ -383,20 +435,20 @@ $("logo").onerror = function(){
   this.src = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><circle cx="48" cy="48" r="46" fill="#e4eef2" stroke="#0b6e8a" stroke-width="3"/><path d="M40 20h16v20h20v16H56v20H40V56H20V40h20z" fill="#0b6e8a"/></svg>');
 };
 if($("logo").complete && $("logo").naturalWidth === 0) $("logo").onerror();
-$("btn-start").onclick = () => { view("form"); goStep(1); };
+$("btn-start").onclick = () => { if(editCtx){ editCtx = null; clearForm(); loadDraft(); } view("form"); goStep(1); };
 $("btn-status").onclick = () => {
   try{ const l = localStorage.getItem("last_request_no"); if(l && !$("st-no").value) $("st-no").value = l; }catch(e){}
   view("status");
 };
-["form-home","done-home","st-home"].forEach(i => $(i).onclick = () => view("home"));
+["form-home","done-home","st-home"].forEach(i => $(i).onclick = () => { if(editCtx){ editCtx = null; clearForm(); } view("home"); });
 $("dept").onchange = onDept;
 $("sub").onchange = saveDraft;
 TEXT_FIELDS.forEach(f => $(f).addEventListener("input", saveDraft));
 $("n1").onclick = () => { if(validate1()) goStep(2); };
 $("b2").onclick = () => goStep(1);
-$("n2").onclick = () => { if(!st.photo){ err("e2","الصورة الشخصية مطلوبة."); return; } err("e2"); goStep(3); };
+$("n2").onclick = () => { if(!st.photo && !editCtx){ err("e2","الصورة الشخصية مطلوبة."); return; } err("e2"); goStep(3); };
 $("b3").onclick = () => goStep(2);
-$("n3").onclick = () => { if(!st.forms.length){ err("e3","يجب إرفاق صورة الاستمارة الورقية."); return; } err("e3"); goStep(4); };
+$("n3").onclick = () => { if(!st.forms.length && !editCtx){ err("e3","يجب إرفاق صورة الاستمارة الورقية."); return; } err("e3"); goStep(4); };
 $("b4").onclick = () => goStep(3);
 $("submit").onclick = submit;
 $("photo-cam").onclick = () => $("photo-in-cam").click();
